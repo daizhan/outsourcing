@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: CorelDRAW X6 -->
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="15.539mm" height="15.4977mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+viewBox="0 0 176 176"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <style type="text/css">
+   <![CDATA[
+    .fil0 {fill:#5F5D5D}
+    .fil1 {fill:#FEFEFE}
+    .fil2 {fill:#FEFEFE;fill-rule:nonzero}
+   ]]>
+  </style>
+ </defs>
+ <g id="图层_x0020_1">
+  <metadata id="CorelCorpID_0Corel-Layer"/>
+  <rect class="fil0" width="176" height="176" rx="19" ry="19"/>
+  <g id="_438452576">
+   <path class="fil1" d="M78 76l8 -3c0,-11 3,-20 10,-28 -8,-2 -16,-1 -24,2 -2,11 -1,21 6,29z"/>
+   <path class="fil1" d="M73 87l3 -8c-8,-7 -12,-16 -12,-27 -8,4 -13,11 -16,19 6,8 14,15 25,16z"/>
+   <path class="fil1" d="M76 98l-3 -7c-11,0 -20,-4 -28,-11 -2,8 0,16 3,24 10,2 20,1 28,-6z"/>
+   <path class="fil1" d="M87 104l-8 -3c-7,7 -16,11 -27,12 4,7 11,12 19,15 8,-6 15,-14 16,-24z"/>
+   <path class="fil1" d="M99 100l-8 3c0,11 -4,20 -11,28 8,2 17,1 24,-2 2,-11 1,-21 -5,-29z"/>
+   <path class="fil1" d="M104 89l-3 8c7,7 11,16 12,27 7,-4 12,-11 15,-19 -6,-8 -14,-15 -24,-16z"/>
+   <path class="fil1" d="M100 78l4 7c10,0 19,4 27,11 2,-8 1,-16 -2,-24 -11,-2 -21,-1 -29,6z"/>
+   <path class="fil1" d="M89 72l8 3c8,-7 17,-11 27,-12 -4,-7 -11,-12 -18,-15 -9,6 -15,14 -17,24z"/>
+   <path class="fil1" d="M88 72c9,0 16,7 16,16 0,9 -7,16 -16,16 -8,0 -15,-7 -15,-16 0,-9 7,-16 15,-16z"/>
+   <path class="fil2" d="M88 139c14,0 27,-6 36,-15 9,-9 15,-22 15,-36 0,-14 -6,-27 -15,-36 -9,-9 -22,-15 -36,-15 -14,0 -27,6 -36,15 -9,9 -15,22 -15,36 0,14 6,27 15,36 9,9 22,15 36,15zm41 -10c-10,11 -25,17 -41,17 -16,0 -30,-6 -41,-17 -10,-10 -17,-25 -17,-41 0,-16 7,-31 17,-41 11,-11 25,-17 41,-17 16,0 31,6 41,17 11,10 17,25 17,41 0,16 -6,31 -17,41z"/>
+  </g>
+ </g>
+</svg>

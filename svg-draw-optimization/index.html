@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>svg</title>
+    <link rel="stylesheet" type="text/css" href="./css/draw.css">
+</head>
+
+<body>
+    <div class="outer-container">
+        <div class="draw-container can-edit">
+            <div class="top-attrs">
+                <ul>
+                    <li class="attrs recovery">
+                        <ul>
+                            <li class="undo selected" title="撤销">
+                                <p></p>
+                            </li>
+                            <li class="redo disabled" title="恢复">
+                                <p></p>
+                            </li>
+                            <li class="format-brush" title="格式刷">
+                                <p></p>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="attrs font">
+                        <ul>
+                            <li class="font-family with-arrow">
+                                <p>微软雅黑</p>
+                            </li>
+                            <li class="separator"></li>
+                            <li class="font-size with-double-arrow">
+                                <p><input type="text" value="14" maxlength="2"><i>px</i></p>
+                                <div class="resize-font-size">
+                                    <span class="big-font-size"></span>
+                                    <span class="small-font-size"></span>
+                                </div>
+                            </li>
+                            <li class="separator"></li>
+                            <li class="disabled color with-arrow has-value" title="颜色">
+                                <p></p>
+                            </li>
+                            <li class="bold" title="粗体">
+                                <p></p>
+                            </li>
+                            <li class="italic" title="斜体">
+                                <p></p>
+                            </li>
+                            <li class="arrange-left with-arrow" title="对齐">
+                                <p></p>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="attrs format">
+                        <ul>
+                            <li class="full-color with-arrow has-value" title="">
+                                <p></p>
+                            </li>
+                            <li class="stroke-color with-arrow has-value">
+                                <p></p>
+                            </li>
+                            <li class="border-width with-arrow">
+                                <p></p>
+                            </li>
+                            <li class="border-style with-arrow">
+                                <p></p>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="attrs cascade">
+                        <ul>
+                            <li class="move-up" title="上移一层">
+                                <p></p>
+                            </li>
+                            <li class="move-down" title="下移一层">
+                                <p></p>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="attrs copy-paste">
+                        <ul>
+                            <li class="copy" title="复制">
+                                <p></p>
+                            </li>
+                            <li class="paste" title="粘贴">
+                                <p></p>
+                            </li>
+                            <li class="cut" title="剪切">
+                                <p></p>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="attrs pos">
+                        <ul>
+                            <li class="width"></li>
+                            <li class="height"></li>
+                            <li class="top"></li>
+                            <li class="left"></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="left-tools">
+                <ul>
+                    <li class="rect">
+                        <p title="矩形"></p>
+                    </li>
+                    <li class="round-rect">
+                        <p title="圆角矩形"></p>
+                    </li>
+                    <li class="line">
+                        <p title="直线"></p>
+                    </li>
+                    <li class="polyline">
+                        <p title="折线"></p>
+                    </li>
+                </ul>
+            </div>
+            <div class="draw-content"></div>
+            <div class="bottom-icons">
+                <ul>
+                    <li>
+                        <img src="./imgs/2.svg">
+                        <p>接地设备</p>
+                    </li>
+                    <li>
+                        <img src="./imgs/3.svg">
+                        <p>接地设备</p>
+                    </li>
+                    <li>
+                        <img src="./imgs/4.svg">
+                        <p>接地设备</p>
+                    </li>
+                    <li>
+                        <img src="./imgs/5.svg">
+                        <p>接地设备</p>
+                    </li>
+                    <li>
+                        <img src="./imgs/6.svg">
+                        <p>接地设备</p>
+                    </li>
+                    <li>
+                        <img src="./imgs/7.svg">
+                        <p>接地设备</p>
+                    </li>
+                    <li>
+                        <img src="./imgs/8.svg">
+                        <p>接地设备</p>
+                    </li>
+                    <li>
+                        <img src="./imgs/9.svg">
+                        <p>接地设备</p>
+                    </li>
+                    <li>
+                        <img src="./imgs/10.svg">
+                        <p>接地设备</p>
+                    </li>
+                    <li>
+                        <img src="./imgs/11.svg">
+                        <p>接地设备</p>
+                    </li>
+                    <li>
+                        <img src="./imgs/12.svg">
+                        <p>接地设备</p>
+                    </li>
+                    <li>
+                        <img src="./imgs/13.svg">
+                        <p>接地设备</p>
+                    </li>
+                    <li>
+                        <img src="./imgs/14.svg">
+                        <p>接地设备</p>
+                    </li>
+                    <li>
+                        <img src="./imgs/15.svg">
+                        <p>接地设备</p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <script src="./js/layer.js"></script>
+    <script src="./js/jquery.min.js"></script>
+    <script src="./js/underscore.min.js"></script>
+    <script src="./js/backbone.min.js"></script>
+    <script src="./js/svg.min.js"></script>
+    <script src="./js/draw.js"></script>
+</body>
+
+</html>
