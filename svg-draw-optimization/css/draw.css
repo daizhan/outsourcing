@@ -100,6 +100,18 @@ textarea {
     border-color: #ccc;
 }
 
+.draw-container .top-attrs .attrs li.disabled,
+.draw-container .top-attrs .attrs li.disabled:hover,
+.draw-container .top-attrs .attrs li.separator.selected,
+.draw-container .top-attrs .attrs li.separator:hover {
+    background: none;
+    -webkit-box-shadow: none;
+    -ms-box-shadow: none;
+    box-shadow: none;
+    border-color: transparent;
+    cursor: not-allowed;
+}
+
 .draw-container .top-attrs .attrs li.separator {
     width: 1px;
     height: 16px;
@@ -111,7 +123,7 @@ textarea {
 
 .draw-container .top-attrs .attrs li.separator.selected,
 .draw-container .top-attrs .attrs li.separator:hover {
-    background: none;
+    background: #aaa;
 }
 
 .draw-container .top-attrs .attrs li>p {
@@ -120,6 +132,14 @@ textarea {
     float: left;
     margin-top: 2px;
     color: #333;
+}
+
+.draw-container .top-attrs .attrs li p.auto-width {
+    width: auto;
+}
+
+.draw-container .top-attrs .attrs li p.no-bg {
+    background: none;
 }
 
 .draw-container .top-attrs .attrs li.disabled>p {
@@ -229,35 +249,65 @@ textarea {
     background-position: 0 -480px;
 }
 
-.draw-container .top-attrs .attrs li p {
-    border-right: 1px solid transparent;
+.draw-container .top-attrs .attrs li .resize-font-size {
+    float: left;
+    width: 10px;
+    height: inherit;
+    border-left: 1px solid transparent;
+    position: relative;
 }
 
-.draw-container .top-attrs .attrs li.with-double-arrow:hover p {
-    border-right: 1px solid #d7d7d7;
+.draw-container .top-attrs .attrs li.with-double-arrow:hover .resize-font-size {
+    border-left: 1px solid #d7d7d7;
 }
 
 .draw-container .top-attrs .attrs li.with-double-arrow span {
-    float: left;
+    width: 100%;
+    height: 50%;
+    position: absolute;
+}
+
+.draw-container .top-attrs .attrs li.with-double-arrow span::after {
+    content: "";
+    position: absolute;
     width: 0;
     height: 0;
-    border-width: 4px 3px;
     border-style: solid;
-}
-
-.draw-container .top-attrs .attrs li.with-double-arrow.disabled .big-font-size {
-    border-color: transparent transparent #aaa transparent;
-}
-
-.draw-container .top-attrs .attrs li.with-double-arrow.disabled .small-font-size {
-    border-color: #aaa transparent transparent transparent;
+    border-width: 4px 3px;
+    left: 50%;
+    margin-left: -2px;
+    top: 50%;
 }
 
 .draw-container .top-attrs .attrs li.with-double-arrow .big-font-size {
-    border-color: transparent transparent #333 transparent;
+    top: 0;
 }
 
 .draw-container .top-attrs .attrs li.with-double-arrow .small-font-size {
+    bottom: 0;
+}
+
+.draw-container .top-attrs .attrs li.with-double-arrow .big-font-size::after {
+    margin-top: -6px;
+}
+
+.draw-container .top-attrs .attrs li.with-double-arrow .small-font-size::after {
+    margin-top: -2px;
+}
+
+.draw-container .top-attrs .attrs li.with-double-arrow.disabled .big-font-size::after {
+    border-color: transparent transparent #aaa transparent;
+}
+
+.draw-container .top-attrs .attrs li.with-double-arrow.disabled .small-font-size::after {
+    border-color: #aaa transparent transparent transparent;
+}
+
+.draw-container .top-attrs .attrs li.with-double-arrow.enable .big-font-size::after {
+    border-color: transparent transparent #333 transparent;
+}
+
+.draw-container .top-attrs .attrs li.with-double-arrow.enable .small-font-size::after {
     border-color: #333 transparent transparent transparent;
 }
 
