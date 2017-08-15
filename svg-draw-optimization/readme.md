@@ -39,5 +39,13 @@
 * jquery.js  操作dom
 * svg.js  操作 svg
 * backbone.js  各模块通信
+### 公共组件
+* doing - 弹出层
+    * 右键菜单
+    * 下拉菜单
+* 顶部消息浮层
 ### 工具栏
+* done - 样式状态 enable, selected, disabled (css class name)
+* doing - 工具和属性类，负责设置特定操作对应的工具和属性状态
+* doing - 定义操作相关的工具和属性
 ## 总结
