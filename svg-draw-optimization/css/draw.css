@@ -59,7 +59,6 @@ textarea {
 .draw-container .top-attrs>ul {
     height: inherit;
     padding-left: 40px;
-    overflow: hidden;
 }
 
 .draw-container .top-attrs>ul>li {
@@ -75,6 +74,7 @@ textarea {
 }
 
 .draw-container .top-attrs .attrs li {
+    overflow: hidden;
     height: inherit;
     float: left;
     top: -1px;
@@ -86,7 +86,11 @@ textarea {
     cursor: pointer;
 }
 
-.draw-container .top-attrs .attrs li:hover,
+.draw-container .top-attrs .attrs li.no-padding {
+    padding: 0;
+}
+
+.draw-container .top-attrs .attrs li.enable:hover,
 .draw-container .top-attrs .attrs li.selected {
     -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, .1);
     -moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, .1);
@@ -100,16 +104,13 @@ textarea {
     border-color: #ccc;
 }
 
-.draw-container .top-attrs .attrs li.disabled,
-.draw-container .top-attrs .attrs li.disabled:hover,
-.draw-container .top-attrs .attrs li.separator.selected,
-.draw-container .top-attrs .attrs li.separator:hover {
+.draw-container .top-attrs .attrs li.disabled {
     background: none;
     -webkit-box-shadow: none;
     -ms-box-shadow: none;
     box-shadow: none;
     border-color: transparent;
-    cursor: not-allowed;
+    cursor: default;
 }
 
 .draw-container .top-attrs .attrs li.separator {
@@ -121,153 +122,163 @@ textarea {
     background: #aaa;
 }
 
-.draw-container .top-attrs .attrs li.separator.selected,
-.draw-container .top-attrs .attrs li.separator:hover {
-    background: #aaa;
-}
-
-.draw-container .top-attrs .attrs li>p {
+.draw-container .top-attrs .attrs li p.bg-icon {
     width: 20px;
     height: 20px;
     float: left;
-    margin-top: 2px;
-    color: #333;
+    position: relative;
+    top: 2px;
 }
 
-.draw-container .top-attrs .attrs li p.auto-width {
-    width: auto;
-}
-
-.draw-container .top-attrs .attrs li p.no-bg {
-    background: none;
-}
-
-.draw-container .top-attrs .attrs li.disabled>p {
-    color: #aaa;
+.draw-container .top-attrs .attrs li.disabled p.bg-icon {
     background: url(../imgs/sprite_disabled.png) no-repeat;
 }
 
-.draw-container .top-attrs .attrs li>p {
+.draw-container .top-attrs .attrs li.enable p.bg-icon {
     background: url(../imgs/sprite.png) no-repeat;
 }
 
-.draw-container .top-attrs .attrs li.font-family>p,
-.draw-container .top-attrs .attrs li.font-size>p {
-    width: auto;
+.draw-container .top-attrs .attrs li p.text-show {
     padding-right: 10px;
-    background: transparent;
+    float: left;
+    font-size: 12px;
+    line-height: 24px;
 }
 
-.draw-container .top-attrs .attrs li.font-size>p input {
-    width: 20px;
+.draw-container .top-attrs .attrs li p.text-input {
     height: inherit;
-    border: 0 none;
-    background: none;
+    padding-right: 14px;
+    padding-left: 3px;
+    background: transparent;
+    font-size: 12px;
 }
 
-.draw-container .top-attrs .attrs li.font-size.selected>p {
+.draw-container .top-attrs .attrs li.selected p.text-input,
+.draw-container .top-attrs .attrs li.enable:hover p.text-input {
     background: #fff;
 }
 
-.draw-container .top-attrs .attrs li.font-size>p i {
+.draw-container .top-attrs .attrs li.disabled p {
+    color: #aaa;
+}
+
+.draw-container .top-attrs .attrs li.enable p {
+    color: #333;
+}
+
+.draw-container .top-attrs .attrs li p.text-input i {
     font-style: normal;
 }
 
-.draw-container .top-attrs .attrs li.has-value>p {
-    border-bottom: 2px solid red;
+.draw-container .top-attrs .attrs li p.text-input input {
+    width: 20px;
+    border: 0 none;
+    height: inherit;
+    padding: 0;
+    background: transparent;
+    color: inherit;
 }
 
-.draw-container .top-attrs .attrs li.undo>p {
+.draw-container .top-attrs .attrs li.has-value p.bg-icon {
+    top: 1px;
+    border-bottom: 2px solid transparent;
+    border-bottom-color: red;
+}
+
+.draw-container .top-attrs .attrs li.undo p.bg-icon {
     background-position: 0 -20px;
 }
 
-.draw-container .top-attrs .attrs li.redo>p {
+.draw-container .top-attrs .attrs li.redo p.bg-icon {
     background-position: -20px 0;
 }
 
-.draw-container .top-attrs .attrs li.format-brush>p {
+.draw-container .top-attrs .attrs li.format-brush p.bg-icon {
     background-position: -20px -20px;
 }
 
-.draw-container .top-attrs .attrs li.color>p {
+.draw-container .top-attrs .attrs li.color p.bg-icon {
     background-position: 0 -80px;
 }
 
-.draw-container .top-attrs .attrs li.bold>p {
+.draw-container .top-attrs .attrs li.bold p.bg-icon {
     background-position: -20px -40px;
 }
 
-.draw-container .top-attrs .attrs li.italic>p {
+.draw-container .top-attrs .attrs li.italic p.bg-icon {
     background-position: 0 -60px;
 }
 
-.draw-container .top-attrs .attrs li.arrange-left>p {
+.draw-container .top-attrs .attrs li.arrange-left p.bg-icon {
     background-position: -20px -80px;
 }
 
-.draw-container .top-attrs .attrs li.arrange-center>p {
+.draw-container .top-attrs .attrs li.arrange-center p.bg-icon {
     background-position: 0 -100px;
 }
 
-.draw-container .top-attrs .attrs li.arrange-right>p {
+.draw-container .top-attrs .attrs li.arrange-right p.bg-icon {
     background-position: -20px -100px;
 }
 
-.draw-container .top-attrs .attrs li.full-color>p {
+.draw-container .top-attrs .attrs li.full-color p.bg-icon {
     background-position: -20px -140px;
 }
 
-.draw-container .top-attrs .attrs li.stroke-color>p {
+.draw-container .top-attrs .attrs li.stroke-color p.bg-icon {
     background-position: 0 -160px;
 }
 
-.draw-container .top-attrs .attrs li.border-width>p {
+.draw-container .top-attrs .attrs li.border-width p.bg-icon {
     background-position: -20px -160px;
 }
 
-.draw-container .top-attrs .attrs li.border-style>p {
+.draw-container .top-attrs .attrs li.border-style p.bg-icon {
     background-position: 0 -180px;
 }
 
-.draw-container .top-attrs .attrs li.move-up>p {
+.draw-container .top-attrs .attrs li.move-up p.bg-icon {
     background-position: -40px -400px;
 }
 
-.draw-container .top-attrs .attrs li.move-down>p {
+.draw-container .top-attrs .attrs li.move-down p.bg-icon {
     background-position: 0 -420px;
 }
 
-.draw-container .top-attrs .attrs li.copy>p {
+.draw-container .top-attrs .attrs li.copy p.bg-icon {
     background-position: -20px -480px;
 }
 
-.draw-container .top-attrs .attrs li.paste>p {
+.draw-container .top-attrs .attrs li.paste p.bg-icon {
     background-position: -40px -480px;
 }
 
-.draw-container .top-attrs .attrs li.cut>p {
+.draw-container .top-attrs .attrs li.cut p.bg-icon {
     background-position: 0 -480px;
 }
 
 .draw-container .top-attrs .attrs li .resize-font-size {
-    float: left;
+    top: 0;
+    right: 0;
+    position: absolute;
     width: 10px;
     height: inherit;
     border-left: 1px solid transparent;
-    position: relative;
 }
 
-.draw-container .top-attrs .attrs li.with-double-arrow:hover .resize-font-size {
+.draw-container .top-attrs .attrs li.enable:hover .resize-font-size,
+.draw-container .top-attrs .attrs li.selected .resize-font-size {
     border-left: 1px solid #d7d7d7;
 }
 
-.draw-container .top-attrs .attrs li.with-double-arrow span {
+.draw-container .top-attrs .attrs .resize-font-size span {
     width: 100%;
     height: 50%;
     position: absolute;
+    left: 0;
 }
 
-.draw-container .top-attrs .attrs li.with-double-arrow span::after {
+.draw-container .top-attrs .attrs .resize-font-size span::after {
     content: "";
     position: absolute;
     width: 0;
@@ -275,46 +286,55 @@ textarea {
     border-style: solid;
     border-width: 4px 3px;
     left: 50%;
-    margin-left: -2px;
+    margin-left: -3px;
     top: 50%;
 }
 
-.draw-container .top-attrs .attrs li.with-double-arrow .big-font-size {
+.draw-container .top-attrs .attrs .big-font-size {
     top: 0;
 }
 
-.draw-container .top-attrs .attrs li.with-double-arrow .small-font-size {
+.draw-container .top-attrs .attrs .small-font-size {
     bottom: 0;
 }
 
-.draw-container .top-attrs .attrs li.with-double-arrow .big-font-size::after {
+.draw-container .top-attrs .attrs .big-font-size::after {
     margin-top: -6px;
 }
 
-.draw-container .top-attrs .attrs li.with-double-arrow .small-font-size::after {
+.draw-container .top-attrs .attrs .small-font-size::after {
     margin-top: -2px;
 }
 
-.draw-container .top-attrs .attrs li.with-double-arrow.disabled .big-font-size::after {
+.draw-container .top-attrs .attrs li.disabled .big-font-size::after {
     border-color: transparent transparent #aaa transparent;
 }
 
-.draw-container .top-attrs .attrs li.with-double-arrow.disabled .small-font-size::after {
+.draw-container .top-attrs .attrs li.disabled .small-font-size::after {
     border-color: #aaa transparent transparent transparent;
 }
 
-.draw-container .top-attrs .attrs li.with-double-arrow.enable .big-font-size::after {
+.draw-container .top-attrs .attrs li.enable .big-font-size::after {
     border-color: transparent transparent #333 transparent;
 }
 
-.draw-container .top-attrs .attrs li.with-double-arrow.enable .small-font-size::after {
+.draw-container .top-attrs .attrs li.enable .small-font-size::after {
     border-color: #333 transparent transparent transparent;
+}
+
+.draw-container .top-attrs .attrs li.selected span,
+.draw-container .top-attrs .attrs li.enable:hover span {
+    background: #eee;
+}
+
+.draw-container .top-attrs .attrs li.enable span:hover {
+    background: #ddd;
 }
 
 .draw-container .top-attrs .attrs li.with-arrow::after {
     display: block;
     position: relative;
-    top: 12px;
+    top: 10px;
     float: left;
     content: "";
     width: 0;
@@ -327,8 +347,24 @@ textarea {
     border-color: #aaa transparent transparent transparent;
 }
 
-.draw-container .top-attrs .attrs li::after {
+.draw-container .top-attrs .attrs li.enable::after {
     border-color: #333 transparent transparent transparent;
+}
+
+.draw-container .top-attrs .attrs.pos {
+    padding: 3px 5px;
+    height: 32px;
+}
+
+.draw-container .top-attrs .attrs.pos li {
+    font-family: "Courier New", Courier, monospace;
+    font-size: 10px;
+    cursor: default;
+}
+
+.draw-container .top-attrs .attrs.pos li i {
+    font-style: normal;
+    padding-right: 2px;
 }
 
 .draw-container .left-tools {
