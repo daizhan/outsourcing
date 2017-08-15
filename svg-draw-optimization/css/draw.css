@@ -47,6 +47,9 @@ textarea {
     padding: 36px 0 0 36px;
 }
 
+
+/* tool and attr start */
+
 .draw-container .top-attrs {
     position: absolute;
     top: 0;
@@ -499,3 +502,6 @@ textarea {
     width: inherit;
     overflow: hidden;
 }
+
+
+/* end tool and attrs */

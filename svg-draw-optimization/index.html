@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>svg</title>
+    <link rel="stylesheet" type="text/css" href="./css/common.css">
     <link rel="stylesheet" type="text/css" href="./css/draw.css">
 </head>
 
@@ -98,14 +99,14 @@
                         <ul>
                             <li class="offset">
                                 <p>
-                                    <span>X: <i class="left">123</i>px<span><br />
-                                    <span>Y: <i class="top">456</i>px<span>
+                                    <span>X: <i class="left">123</i>px</span><br />
+                                    <span>Y: <i class="top">456</i>px</span>
                                 </p>
                             </li>
                             <li class="size">
                                 <p>
-                                    <span>W: <i class="width">123</i>px<span><br />
-                                    <span>H: <i class="height">456</i>px<span>
+                                    <span>W: <i class="width">123</i>px</span><br />
+                                    <span>H: <i class="height">456</i>px</span>
                                 </p>
                             </li>
                         </ul>
@@ -191,11 +192,22 @@
             </div>
         </div>
     </div>
+    <div class="common-popup-block with-selected">
+        <ul>
+            <li class="copy"><i></i><span>对齐顶部</span><span class="shortcut">ctrl+T</span></li>
+            <li class="paste disabled"><i></i><span>对齐顶部</span></li>
+            <li class="separator"></li>
+            <li class="cut selected"><i class="cut"></i><span>对齐顶部</span></li>
+            <li class="cut selected"><span>对齐顶部</span></li>
+            <li class="bold"><i></i><span>对齐顶部</span><span class="shortcut">ctrl+k, ctrl+F</span></li>
+        </ul>
+    </div>
     <script src="./js/layer.js"></script>
     <script src="./js/jquery.min.js"></script>
     <script src="./js/underscore.min.js"></script>
     <script src="./js/backbone.min.js"></script>
     <script src="./js/svg.min.js"></script>
+    <script src="./js/common.js"></script>
     <script src="./js/draw.js"></script>
 </body>
 

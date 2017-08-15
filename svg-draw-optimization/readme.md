@@ -40,9 +40,9 @@
 * svg.js  操作 svg
 * backbone.js  各模块通信
 ### 公共组件
-* doing - 弹出层
-    * 右键菜单
-    * 下拉菜单
+* doing - 弹出层 (右键菜单和下拉菜单)
+    * 样式开发完成
+    * doing - js 交互
 * 顶部消息浮层
 ### 工具栏
 * done - 样式状态 enable, selected, disabled (css class name)
