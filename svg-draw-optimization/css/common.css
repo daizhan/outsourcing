@@ -432,20 +432,20 @@ body .layui-m-layer .layui-m-layer-msg {
     overflow: hidden;
     border-radius: 5px;
     border: 1px solid rgb(180, 180, 180);
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3)
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    background: #fff;
 }
 
-.common-popup-block ul {
+.menu-popup ul {
     padding: 5px 0;
-    background: #fff;
     width: inherit;
 }
 
-.common-popup-block li.disabled {
+.menu-popup li.disabled {
     color: #aaa;
 }
 
-.common-popup-block li {
+.menu-popup li {
     height: 30px;
     line-height: 30px;
     padding: 0 10px;
@@ -453,50 +453,50 @@ body .layui-m-layer .layui-m-layer-msg {
     color: #333;
 }
 
-.common-popup-block li:hover {
+.menu-popup li:hover {
     background: #f2f2f2;
     cursor: pointer;
 }
 
-.common-popup-block li.disabled:hover {
+.menu-popup li.disabled:hover {
     background: transparent;
     cursor: default;
 }
 
-.common-popup-block li.separator {
+.menu-popup li.separator {
     padding: 0;
     margin: 5px 0;
     height: 1px;
     background: #aaa;
 }
 
-.common-popup-block li.separator:hover {
+.menu-popup li.separator:hover {
     cursor: default;
     background: #aaa;
 }
 
-.common-popup-block li i {
+.menu-popup li i {
     float: left;
     width: 20px;
     height: 20px;
     background: url(../imgs/sprite.png) no-repeat;
-    margin-right: 10px;
+    margin-right: 5px;
     margin-top: 5px;
 }
 
-.common-popup-block li .shortcut {
+.menu-popup li .shortcut {
     float: right;
     color: #999;
     font-size: 14px;
     padding-left: 20px;
 }
 
-.common-popup-block.with-selected li {
+.menu-popup.with-selected li {
     padding-left: 30px;
     position: relative;
 }
 
-.common-popup-block.with-selected li.selected::before {
+.menu-popup.with-selected li.selected::before {
     content: "";
     position: absolute;
     width: 20px;
@@ -508,80 +508,110 @@ body .layui-m-layer .layui-m-layer-msg {
     background-position: -40px -100px;
 }
 
-.common-popup-block li.disabled i {
+.menu-popup li.disabled i {
     background: url(../imgs/sprite_disabled.png) no-repeat;
 }
 
-.common-popup-block li.undo i {
+.menu-popup li.undo i {
     background-position: 0 -20px;
 }
 
-.common-popup-block li.redo i {
+.menu-popup li.redo i {
     background-position: -20px 0;
 }
 
-.common-popup-block li.format-brush i {
+.menu-popup li.format-brush i {
     background-position: -20px -20px;
 }
 
-.common-popup-block li.color i {
+.menu-popup li.color i {
     background-position: 0 -80px;
 }
 
-.common-popup-block li.bold i {
+.menu-popup li.bold i {
     background-position: -20px -40px;
 }
 
-.common-popup-block li.italic i {
+.menu-popup li.italic i {
     background-position: 0 -60px;
 }
 
-.common-popup-block li.arrange-left i {
+.menu-popup li.arrange-left i {
     background-position: -20px -80px;
 }
 
-.common-popup-block li.arrange-center i {
+.menu-popup li.arrange-center i {
     background-position: 0 -100px;
 }
 
-.common-popup-block li.arrange-right i {
+.menu-popup li.arrange-right i {
     background-position: -20px -100px;
 }
 
-.common-popup-block li.full-color i {
+.menu-popup li.full-color i {
     background-position: -20px -140px;
 }
 
-.common-popup-block li.stroke-color i {
+.menu-popup li.stroke-color i {
     background-position: 0 -160px;
 }
 
-.common-popup-block li.border-width i {
+.menu-popup li.border-width i {
     background-position: -20px -160px;
 }
 
-.common-popup-block li.border-style i {
+.menu-popup li.border-style i {
     background-position: 0 -180px;
 }
 
-.common-popup-block li.move-up i {
+.menu-popup li.move-up i {
     background-position: -40px -400px;
 }
 
-.common-popup-block li.move-down i {
+.menu-popup li.move-down i {
     background-position: 0 -420px;
 }
 
-.common-popup-block li.copy i {
+.menu-popup li.copy i {
     background-position: -20px -480px;
 }
 
-.common-popup-block li.paste i {
+.menu-popup li.paste i {
     background-position: -40px -480px;
 }
 
-.common-popup-block li.cut i {
+.menu-popup li.cut i {
     background-position: 0 -480px;
+}
+
+.color-picker {
+    top: 500px;
+}
+
+.color-picker ul {
+    margin: 10px;
+    width: 156px;
+    border-left: 1px solid #000;
+    border-bottom: 1px solid #000;
+    overflow: hidden;
+}
+
+.color-picker ul li {
+    float: left;
+    width: 12px;
+    height: 12px;
+    border-right: 1px solid #000;
+    border-top: 1px solid #000;
+}
+
+.color-picker ul.recommend-color {
+    margin-top: 10px;
+}
+
+.color-picker ul li:hover,
+.color-picker ul li.selected {
+    margin: -1px -1px -2px -2px;
+    border: 2px solid red;
 }
 
 

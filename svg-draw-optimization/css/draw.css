@@ -484,6 +484,7 @@ textarea {
 }
 
 .draw-container .bottom-icons ul li {
+    cursor: pointer;
     width: 50px;
     float: left;
     position: relative;
@@ -492,6 +493,10 @@ textarea {
     margin-left: 10px;
     text-align: center;
     font-size: 10px;
+}
+
+.draw-container .bottom-icons ul li.disabled {
+    cursor: default;
 }
 
 .draw-container .bottom-icons ul li:first-child {

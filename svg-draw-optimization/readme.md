@@ -43,9 +43,28 @@
 * doing - 弹出层 (右键菜单和下拉菜单)
     * 样式开发完成
     * doing - js 交互
-* 顶部消息浮层
+* done - 顶部消息浮层 (use layer)
 ### 工具栏
 * done - 样式状态 enable, selected, disabled (css class name)
 * doing - 工具和属性类，负责设置特定操作对应的工具和属性状态
 * doing - 定义操作相关的工具和属性
+### 图形
+* 矩形
+    * 属性
+        * enable
+        * disabled
+    * 右键菜单
+        * copy
+        * cut
+        * paste - 判断是否已有复制内容
+        * delete
+        * move-up
+        * move-down
+        * edit-text
+* 直线
+    * 属性
+    * 右键菜单
+* 图标
+    * 属性
+    * 右键菜单
 ## 总结
