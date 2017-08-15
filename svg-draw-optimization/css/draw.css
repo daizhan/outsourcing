@@ -363,6 +363,13 @@ textarea {
     font-family: "Courier New", Courier, monospace;
     font-size: 10px;
     cursor: default;
+    line-height: 1;
+}
+
+.draw-container .top-attrs .attrs.pos li span {
+    margin-top: 3px;
+    float: left;
+    clear: left;
 }
 
 .draw-container .top-attrs .attrs.pos li i {
