@@ -593,7 +593,7 @@ body .layui-m-layer .layui-m-layer-msg {
     width: 156px;
     border-left: 1px solid #000;
     border-bottom: 1px solid #000;
-    overflow: hidden;
+    height: 13px;
 }
 
 .color-picker ul li {
@@ -602,16 +602,46 @@ body .layui-m-layer .layui-m-layer-msg {
     height: 12px;
     border-right: 1px solid #000;
     border-top: 1px solid #000;
+    position: relative;
 }
 
 .color-picker ul.recommend-color {
     margin-top: 10px;
+    height: 117px;
 }
 
 .color-picker ul li:hover,
 .color-picker ul li.selected {
     margin: -1px -1px -2px -2px;
-    border: 2px solid red;
+    border: #f7ddaa solid 2px;
+    z-index: 10;
+}
+
+.color-picker ul li:hover {
+    border-color: #fff;
+}
+
+.color-picker .color-info {
+    margin: 10px;
+    font-size: 14px;
+    color: #999;
+}
+
+.color-picker .color-info input {
+    color: #333;
+    width: 50px;
+    font-size: inherit;
+    padding: 2px 4px;
+    border: 1px solid #aaa;
+    border-radius: 3px;
+}
+
+.color-picker .color-info span {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-left: 10px;
+    cursor: pointer;
 }
 
 

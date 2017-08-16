@@ -44,6 +44,12 @@
     * 样式开发完成
     * doing - js 交互
 * done - 顶部消息浮层 (use layer)
+* done - 颜色选择器
+    * C.ColorPicker.init($target, color, callback, triggerType);
+    * $target 被点击的dom节点 jquery 对象
+    * color 已经选择的颜色值
+    * callback 选择其他颜色后的回调
+    * triggerType 放置事件冒泡到body， 被自动移除。目前仅支持"triggerByTarget"值
 ### 工具栏
 * done - 样式状态 enable, selected, disabled (css class name)
 * doing - 工具和属性类，负责设置特定操作对应的工具和属性状态
