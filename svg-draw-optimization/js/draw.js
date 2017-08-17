@@ -91,4 +91,47 @@
             return false;
         }
     });
+
+    var deviceHeight = $(".bottom-icons")[0].offsetHeight;
+    $(".draw-content").css("margin-bottom", deviceHeight + "px");
+
+    var AppView = D.View.extend({
+        initialize: function() {
+            this.svg = SVG("svg-wrapper");
+            this.render();
+        },
+        renderGrid: function() {
+            var gap = 4,
+                box = this.svg.rbox();
+            for (var i = 0; i < box.width; i += gap) {
+                for (var j = 0; j < box.height; j += gap) {}
+            }
+        },
+        render: function() {
+            this.renderGrid();
+        }
+    });
+    var app = null;
+
+    window.Draw = {
+        checkData: function(data) {
+            return {};
+        },
+        init: function(data, callback) {
+            var validData = this.checkData(data);
+            app = new AppView(validData);
+        },
+        save: function(callback) {
+            if (!app) {
+                console.log("draw not inited");
+                return;
+            }
+        },
+        setEvent: function(eventType, targetType, callback) {
+            if (!app) {
+                console.log("draw not inited");
+                return;
+            }
+        }
+    }
 })();

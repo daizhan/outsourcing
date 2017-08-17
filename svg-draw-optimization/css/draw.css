@@ -20,6 +20,22 @@ a {
     text-decoration: none;
 }
 
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    background: #fff;
+    padding: 1px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background: #c9c9c9;
+}
+
 input,
 select,
 button,
@@ -43,7 +59,7 @@ textarea {
 }
 
 .draw-container.can-edit {
-    padding: 36px 0 0 36px;
+    padding: 39px 0 0 39px;
 }
 
 
@@ -496,12 +512,13 @@ textarea {
 
 .draw-container .bottom-icons {
     border-top: 1px solid #d7d7d7;
-    padding: 10px 0;
+    padding: 14px 0 10px;
     position: absolute;
     background: inherit;
     left: 0;
     right: 0;
     bottom: 0;
+    overflow: hidden;
 }
 
 .draw-container .bottom-icons ul {
@@ -543,6 +560,20 @@ textarea {
     width: inherit;
     overflow: hidden;
     position: relative;
+    overflow: auto;
+    margin-left: -1px;
+    margin-top: -1px;
+    border: 1px solid #d7d7d7;
+    border-bottom: 0 none;
+}
+
+.draw-container.can-edit .draw-content {
+    margin-bottom: 100px;
+}
+
+#svg-wrapper svg {
+    margin: 20px;
+    background: #fff;
 }
 
 
