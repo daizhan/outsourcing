@@ -570,6 +570,18 @@ body .layui-m-layer .layui-m-layer-msg {
     background-position: 0 -420px;
 }
 
+.menu-popup li.line-no-arrow i {
+    height: 10px;
+    margin-top: -5px;
+    background-position: -32px -329px;
+}
+
+.menu-popup li.line-with-arrow i {
+    height: 10px;
+    margin-top: -5px;
+    background-position: -32px -228px;
+}
+
 .menu-popup li.copy i {
     background-position: -20px -480px;
 }
@@ -579,6 +591,10 @@ body .layui-m-layer .layui-m-layer-msg {
 }
 
 .menu-popup li.cut i {
+    background-position: 0 -480px;
+}
+
+.menu-popup li.delete i {
     background-position: 0 -480px;
 }
 

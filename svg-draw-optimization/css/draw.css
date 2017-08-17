@@ -36,7 +36,7 @@ textarea {
 .draw-container {
     font-size: 14px;
     position: relative;
-    width: 1000px;
+    width: 1200px;
     margin: 0 auto;
     border: 1px solid #d7d7d7;
     background: #f5f5f5;
@@ -181,6 +181,20 @@ textarea {
     color: inherit;
 }
 
+.draw-container .top-attrs .attrs li.scale.selected,
+.draw-container .top-attrs .attrs li.scale:hover {
+    background: #fff;
+}
+
+.draw-container .top-attrs .attrs li.scale p.text-input {
+    padding-right: 0px;
+    float: left;
+}
+
+.draw-container .top-attrs .attrs li.scale p.text-input input {
+    width: 40px;
+}
+
 .draw-container .top-attrs .attrs li.has-value p.bg-icon {
     top: 1px;
     border-bottom: 2px solid transparent;
@@ -257,6 +271,22 @@ textarea {
 
 .draw-container .top-attrs .attrs li.cut p.bg-icon {
     background-position: 0 -480px;
+}
+
+.draw-container .top-attrs .attrs li.delete p.bg-icon {
+    background-position: 0 -500px;
+}
+
+.draw-container .top-attrs .attrs li.line-no-arrow p.bg-icon {
+    height: 10px;
+    margin: 5px 2px 5px 0;
+    background-position: -32px -329px;
+}
+
+.draw-container .top-attrs .attrs li.line-with-arrow p.bg-icon {
+    height: 10px;
+    margin: 5px 2px 5px 0;
+    background-position: -32px -228px;
 }
 
 .draw-container .top-attrs .attrs li .resize-font-size {
@@ -512,6 +542,7 @@ textarea {
     height: 700px;
     width: inherit;
     overflow: hidden;
+    position: relative;
 }
 
 
