@@ -82,9 +82,13 @@
             C.layer.topNotify("info", { content: "operate: " + operate + "<br />value: " + value, shade: false, time: 2 });
         }, "triggerByTarget");
     });
-    $(".draw-content").click(function(event) {
-        C.Menu.init(event, data1, function(operate, value) {
-            C.layer.topNotify("info", { content: "operate: " + operate + "<br />value: " + value, shade: false, time: 2 });
-        }, "triggerByTarget");
+    $(document).contextmenu(function(event) {
+        var $target = $(event.target);
+        if ($target.hasClass("draw-content")) {
+            C.Menu.init(event, data1, function(operate, value) {
+                C.layer.topNotify("info", { content: "operate: " + operate + "<br />value: " + value, shade: false, time: 2 });
+            });
+            return false;
+        }
     });
 })();

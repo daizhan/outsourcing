@@ -36,8 +36,7 @@ textarea {
 .draw-container {
     font-size: 14px;
     position: relative;
-    width: inherit;
-    max-width: 1000px;
+    width: 1000px;
     margin: 0 auto;
     border: 1px solid #d7d7d7;
     background: #f5f5f5;

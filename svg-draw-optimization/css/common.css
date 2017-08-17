@@ -427,8 +427,6 @@ body .layui-m-layer .layui-m-layer-msg {
 
 .common-popup-block {
     position: absolute;
-    left: 200px;
-    top: 200px;
     overflow: hidden;
     border-radius: 5px;
     border: 1px solid rgb(180, 180, 180);
