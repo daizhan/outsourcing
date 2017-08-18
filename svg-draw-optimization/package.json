@@ -4,7 +4,8 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "build": "r.js.cmd -o js/build.js"
+        "build-dev": "r.js.cmd -o js/build-dev.js",
+        "build-release": "r.js.cmd -o js/build-release.js"
     },
     "keywords": [],
     "author": "",
