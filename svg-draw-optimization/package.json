@@ -4,14 +4,12 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "merge": "gulp concat-js"
+        "build": "r.js.cmd -o js/build.js"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "devDependencies": {
-        "gulp": "^3.9.1",
-        "gulp-concat": "^2.6.1",
-        "gulp-sourcemaps": "^2.6.0"
+        "requirejs": "^2.3.4"
     }
 }

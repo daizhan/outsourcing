@@ -1,7 +1,7 @@
-(function() {
+require(["config", "jquery", "underscore", "backbone", "svg", "common", "attrs", "view", "model"], function(config, $, _, Backbone, SVG, C, Attr, View, Model) {
     $(".color, .full-color, .stroke-color").click(function() {
         var $target = $(this);
-        C.ColorPicker.init($target, "000000", function(color) {
+        C.colorPicker.init($target, "000000", function(color) {
             C.layer.topNotify("info", { content: "颜色值: #" + color, shade: false, time: 2 });
         }, "triggerByTarget");
     });
@@ -77,28 +77,21 @@
     };
     $(".border-width, .border-style").click(function(event) {
         var $target = $(this);
-        C.Menu.init($target, data, function(operate, value) {
+        C.popupMenu.init($target, data, function(operate, value) {
             C.layer.topNotify("info", { content: "operate: " + operate + "<br />value: " + value, shade: false, time: 2 });
         }, "triggerByTarget");
     });
-    $(document).contextmenu(function(event) {
-        var $target = $(event.target);
-        if ($target.hasClass("draw-content")) {
-            C.Menu.init(event, data1, function(operate, value) {
-                C.layer.topNotify("info", { content: "operate: " + operate + "<br />value: " + value, shade: false, time: 2 });
-            });
-            return false;
-        }
-    });
 
-    var deviceHeight = $(".bottom-icons")[0].offsetHeight;
-    $(".draw-content").css("margin-bottom", deviceHeight + "px");
-
-    var AppView = D.View.extend({
-        initialize: function() {
+    var AppView = View.base.extend({
+        initialize: function(data) {
             this.svg = SVG("svg-wrapper").size("100%", "100%");
-            this.bg = this.svg.group();
-            this.render();
+            this.bg = null;
+            if (data.isEdit) {
+                var deviceHeight = $(".bottom-icons")[0].offsetHeight;
+                $(".draw-content").css("margin-bottom", deviceHeight + "px");
+            }
+            this.render(data);
+            this.setRightBtnMenu();
         },
         renderGrid: function() {
             var gap = 12,
@@ -109,6 +102,11 @@
                 lineWidth = 1,
                 path,
                 max = Math.max(box.width, box.height);
+            if (this.bg) {
+                this.bg.clear();
+            } else {
+                this.bg = this.svg.group();
+            }
             for (i = 0; i <= max; i += gap) {
                 if (i <= box.height) { // 横线
                     path = this.bg.path("M " + 0 + " " + i + " L " + box.width + " " + i);
@@ -130,15 +128,27 @@
                 }
             }
         },
-        render: function() {
+        render: function(data) {
             this.renderGrid();
+        },
+        setRightBtnMenu: function() {
+            $(document).contextmenu(function(event) {
+                var $target = $(event.target);
+                if ($target.hasClass("draw-content") || $target.parents(".draw-content").length) {
+                    C.popupMenu.init(event, data1, function(operate, value) {
+                        C.layer.topNotify("info", { content: "operate: " + operate + "<br />value: " + value, shade: false, time: 2 });
+                    });
+                    return false;
+                }
+            });
         }
+
     });
     var app = null;
 
     window.Draw = {
         checkData: function(data) {
-            return {};
+            return data;
         },
         init: function(data, callback) {
             var validData = this.checkData(data);
@@ -158,7 +168,12 @@
         }
     }
 
-    Draw.init({}, function() {
-        C.layer.topNotify("success", { content: "draw inited", shade: false, time: 2 });
-    });
-})();
+    Draw.init({
+            el: ".outer-wrapper",
+            isEdit: true
+        },
+        function() {
+            C.layer.topNotify("success", { content: "draw inited", shade: false, time: 2 });
+        }
+    );
+});

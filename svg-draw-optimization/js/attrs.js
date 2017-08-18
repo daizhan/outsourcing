@@ -1,9 +1,4 @@
-(function(window) {
-
-    if (typeof window.D == "undefined") {
-        window.D = {};
-    }
-
+define(["jquery", "underscore", "backbone", "svg"], function($, _, Backbone, SVG) {
     var attrModel = Backbone.View.extend({
 
     });
@@ -11,6 +6,8 @@
 
     });
 
-    window.D.attrModel = attrModel;
-    window.D.attrView = attrView;
-})(window);
+    return {
+        attrView: attrView,
+        attrModel: attrModel
+    }
+});

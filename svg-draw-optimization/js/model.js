@@ -1,24 +1,24 @@
-(function(window) {
-    if (typeof window.D == "undefined") {
-        window.D = {};
-    }
+define(["jquery", "underscore", "backbone", "svg"], function($, _, Backbone, SVG) {
     var Model = Backbone.Model.extend({
 
     });
-    window.D.Model = Model;
 
     var LineModel = Model.extend({
 
     });
-    window.D.LineModel = LineModel;
 
     var RectModel = Model.extend({
 
     });
-    window.D.RectModel = RectModel;
 
     var DeviceModel = Model.extend({
 
     });
-    window.D.DeviceModel = DeviceModel;
-})(window);
+
+    return {
+        base: Model,
+        line: LineModel,
+        rect: RectModel,
+        device: DeviceModel
+    }
+});

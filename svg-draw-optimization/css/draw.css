@@ -46,7 +46,7 @@ textarea {
 }
 
 .outer-container {
-    margin: 100px auto;
+    margin: 100px auto 0;
 }
 
 .draw-container {
