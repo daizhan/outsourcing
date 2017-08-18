@@ -1,5 +1,4 @@
 (function() {
-    C.layer.topNotify("success", { content: "layer popup test", shade: false, time: 2 });
     $(".color, .full-color, .stroke-color").click(function() {
         var $target = $(this);
         C.ColorPicker.init($target, "000000", function(color) {
@@ -97,14 +96,38 @@
 
     var AppView = D.View.extend({
         initialize: function() {
-            this.svg = SVG("svg-wrapper");
+            this.svg = SVG("svg-wrapper").size("100%", "100%");
+            this.bg = this.svg.group();
             this.render();
         },
         renderGrid: function() {
-            var gap = 4,
-                box = this.svg.rbox();
-            for (var i = 0; i < box.width; i += gap) {
-                for (var j = 0; j < box.height; j += gap) {}
+            var gap = 12,
+                box = this.svg.rbox(),
+                start, end,
+                shadowColor = "#ccc",
+                deepColor = "#999",
+                lineWidth = 1,
+                path,
+                max = Math.max(box.width, box.height);
+            for (i = 0; i <= max; i += gap) {
+                if (i <= box.height) { // 横线
+                    path = this.bg.path("M " + 0 + " " + i + " L " + box.width + " " + i);
+                    if ((i / gap) % 4) {
+                        path.stroke({ color: shadowColor });
+                    } else {
+                        path.stroke({ color: deepColor });
+                    }
+                    path.transform({ y: 0.5 });
+                }
+                if (i <= box.width) { // 竖线
+                    path = this.bg.path("M " + i + " " + 0 + " L " + i + " " + box.height);
+                    if ((i / gap) % 4) {
+                        path.stroke({ color: shadowColor, width: lineWidth });
+                    } else {
+                        path.stroke({ color: deepColor, width: lineWidth });
+                    }
+                    path.transform({ x: 0.5 });
+                }
             }
         },
         render: function() {
@@ -134,4 +157,8 @@
             }
         }
     }
+
+    Draw.init({}, function() {
+        C.layer.topNotify("success", { content: "draw inited", shade: false, time: 2 });
+    });
 })();
