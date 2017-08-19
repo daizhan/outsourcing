@@ -440,6 +440,11 @@ textarea {
     width: 100%;
     height: 38px;
     position: relative;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
 }
 
 .draw-container .left-tools ul li:hover {
@@ -539,6 +544,15 @@ textarea {
     margin-left: 10px;
     text-align: center;
     font-size: 10px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+}
+
+.draw-container .bottom-icons ul li.selected {
+    color: blue;
 }
 
 .draw-container .bottom-icons ul li.disabled {
