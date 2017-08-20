@@ -3,6 +3,7 @@ require.config({
     paths: {
         "jquery": "lib/jquery.min",
         "underscore": "lib/underscore.min",
+        // TODO
         "backbone": "lib/backbone",
         "svg": "lib/svg.min",
     }
