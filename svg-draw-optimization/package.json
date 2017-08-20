@@ -5,12 +5,14 @@
     "main": "index.js",
     "scripts": {
         "build-dev": "r.js.cmd -o js/build-dev.js",
-        "build-release": "r.js.cmd -o js/build-release.js"
+        "build-release": "r.js.cmd -o js/build-release.js",
+        "start-server": "http-server -a 0.0.0.0 -p 8080 -c-1"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "devDependencies": {
+        "http-server": "^0.10.0",
         "requirejs": "^2.3.4"
     }
 }

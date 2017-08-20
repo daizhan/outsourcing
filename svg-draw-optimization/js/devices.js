@@ -13,9 +13,9 @@ define(["jquery", "underscore", "backbone", "svg", "templates/device-tpl"], func
             var self = this;
             this.model.set({ devices: data.devices });
             this.on({
-                "cancelSelect": this.cancelSelect
+                "selectDone": this.clearItemSelected
             }, this);
-            $(document).on("click, mouseup", function(event) {
+            $(document).on("click", function(event) {
                 self.bindBodyClickEvent(event);
             });
         },
@@ -32,26 +32,28 @@ define(["jquery", "underscore", "backbone", "svg", "templates/device-tpl"], func
         selectDevice: function(event) {
             var $target = $(event.currentTarget),
                 type = $target.attr("data-type");
+            this.preventBodyClear = true;
             if ($target.hasClass("selected")) {
                 return;
             }
-            this.preventBodyClear = true;
-            this.cancelSelect(false)
+            this.clearItemSelected();
             $target.addClass("selected");
             this.trigger("selectDevice", { type: this.type, value: type });
         },
         cancelSelect: function(isNotify) {
-            var $target = this.$el.find("li");
-            $target.removeClass("selected");
-            if (typeof isNotify == "undefined" || isNotify) {
+            if (this.getSelected().length && (typeof isNotify == "undefined" || isNotify)) {
                 this.trigger("cancelDevice", { type: "", value: "" });
             }
+            this.clearItemSelected();
+        },
+        clearItemSelected: function() {
+            var $target = this.$el.find("li");
+            $target.removeClass("selected");
         },
         getSelected: function() {
             return this.$el.find("li.selected");
         },
         bindBodyClickEvent: function(event) {
-            var $selected = this.getSelected();
             if (!this.preventBodyClear) {
                 this.cancelSelect()
             }

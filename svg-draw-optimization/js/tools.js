@@ -5,14 +5,19 @@ define(["jquery", "underscore", "backbone", "svg", "templates/tool-tpl"], functi
         }
     });
     var toolView = Backbone.View.extend({
+        preventBodyClear: false,
         type: "tool",
         tagName: "div",
         className: "left-tools",
         initialize: function(data) {
+            var self = this;
             this.model.set({ tools: data.tools });
             this.on({
-                "cancelSelect": this.cancelSelect
+                "selectDone": this.clearItemSelected
             }, this);
+            $(document).on("click", function(event) {
+                self.bindBodyClickEvent(event);
+            });
         },
         template: _.template(tpl),
         render: function() {
@@ -25,26 +30,35 @@ define(["jquery", "underscore", "backbone", "svg", "templates/tool-tpl"], functi
 
         // events
         selectTool: function(event) {
-            var self = this,
-                $target = $(event.currentTarget),
-                type = $target.attr("data-type"),
-                $selectedTool = $target.siblings(".selected");
+            var $target = $(event.currentTarget),
+                type = $target.attr("data-type");
+            this.preventBodyClear = true;
             if ($target.hasClass("selected")) {
                 return;
             }
-            if ($selectedTool.length) {
-                $.each($selectedTool, function(index, item) {
-                    self.cancelSelect(item.getAttribute("data-type"));
-                });
-            }
+            this.clearItemSelected();
             $target.addClass("selected");
             this.trigger("selectTool", { type: this.type, value: type });
         },
-        cancelSelect: function(type) {
+        cancelSelect: function(isNotify) {
+            if (this.getSelected().length && (typeof isNotify == "undefined" || isNotify)) {
+                this.trigger("cancelTool", { type: "", value: "" });
+            }
+            this.clearItemSelected();
+        },
+        clearItemSelected: function() {
             var $target = this.$el.find("li");
             $target.removeClass("selected");
-            this.trigger("cancelTool", { type: this.type, value: type });
-        }
+        },
+        getSelected: function() {
+            return this.$el.find("li.selected");
+        },
+        bindBodyClickEvent: function(event) {
+            if (!this.preventBodyClear) {
+                this.cancelSelect()
+            }
+            this.preventBodyClear = false;
+        },
     });
 
     return {

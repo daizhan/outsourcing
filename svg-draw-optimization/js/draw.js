@@ -188,7 +188,6 @@ require(
 
             initTool: function(tools) {
                 this.toolView = new Tool.view({ model: new Tool.model(), tools: tools });
-                // TODO 需要调整
                 this.$main.find(".top-attrs").after(this.toolView.render().el);
 
                 this.listenTo(this.toolView, "selectTool", this.setSelectedItem);
@@ -197,7 +196,7 @@ require(
 
             // events and methods
             setSelectedItem: function(data) {
-                this.itemToBeAdd = data;
+                this.itemToBeAdd = _.extend({}, data);
             },
             clearItemToBeAdd: function() {
                 if (this.elemToBeAdd) {
@@ -209,6 +208,7 @@ require(
                 this.clearItemToBeAdd();
             },
             hover: function(event) {
+                console.log(this.itemToBeAdd.type);
                 if (this.itemToBeAdd.type && this.itemToBeAdd.value) {
                     this.showItemToBeAdd(event);
                 } else {}
@@ -219,9 +219,10 @@ require(
                     x = event.clientX,
                     y = event.clientY,
                     offset = $(this.svg.node).offset(),
-                    scrollTop = this.$main.scrollTop(),
-                    scrollLeft = this.$main.scrollLeft();
-
+                    docScrollTop = $(window).scrollTop(),
+                    docScrollLeft = $(window).scrollLeft(),
+                    scrollTop = this.$main.scrollTop() + docScrollTop,
+                    scrollLeft = this.$main.scrollLeft() + docScrollLeft;
                 if (this.elemToBeAdd) {
                     this.elemToBeAdd.clear();
                 } else {
@@ -230,17 +231,28 @@ require(
                 group = this.elemToBeAdd;
                 rect = group.rect(40, 40).fill("#f06").attr({ x: x - offset.left + scrollLeft - 20, y: y - offset.top + scrollTop - 20 });
             },
+            notifyAddDone: function(type) {
+                if (type == this.toolView.type) {
+                    this.toolView.trigger("selectDone");
+                } else if (type == this.deviceView.type) {
+                    this.deviceView.trigger("selectDone");
+                }
+            },
             addItem: function(event) {
                 var group,
                     x = event.clientX,
                     y = event.clientY,
                     offset = $(this.svg.node).offset(),
-                    scrollTop = this.$main.scrollTop(),
-                    scrollLeft = this.$main.scrollLeft();
+                    docScrollTop = $(window).scrollTop(),
+                    docScrollLeft = $(window).scrollLeft(),
+                    scrollTop = this.$main.scrollTop() + docScrollTop,
+                    scrollLeft = this.$main.scrollLeft() + docScrollLeft;
 
                 if (this.itemToBeAdd.type && this.itemToBeAdd.value) {
+                    console.log("test");
                     group = this.svg.group();
                     group.rect(40, 40).fill("#f06").attr({ x: x - offset.left + scrollLeft - 20, y: y - offset.top + scrollTop - 20 });
+                    this.notifyAddDone(this.itemToBeAdd.type);
                     this.clearSelectedItem();
                 }
             },
