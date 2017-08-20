@@ -3,13 +3,13 @@ require.config({
     paths: {
         "jquery": "lib/jquery.min",
         "underscore": "lib/underscore.min",
-        "backbone": "lib/backbone.min",
+        "backbone": "lib/backbone",
         "svg": "lib/svg.min",
     }
 });
 require(
-    ["jquery", "underscore", "backbone", "svg", "common", "attrs", "tools", "devices", "view", "model"],
-    function($, _, Backbone, SVG, C, Attr, Tool, Device, View, Model) {
+    ["jquery", "underscore", "backbone", "svg", "common", "attrs", "tools", "devices", "view", "model", "collection"],
+    function($, _, Backbone, SVG, C, Attr, Tool, Device, View, Model, Collection) {
         $(".color, .full-color, .stroke-color").click(function() {
             var $target = $(this);
             C.colorPicker.init($target, "000000", function(color) {
@@ -99,8 +99,12 @@ require(
                 this.$main = this.$el.find(".draw-container");
                 this.svg = SVG("svg-wrapper").size("100%", "100%");
                 this.bg = null;
-                this.elemToBeAdd = null;
                 this.deviceView = null;
+                this.toolView = null;
+                this.deviceCollections = new Collection.device();
+                this.rectCollections = new Collection.rect();
+                this.lineCollections = new Collection.line();
+                this.elemToBeAdd = null;
 
                 this.itemToBeAdd = {
                     type: "",
@@ -120,6 +124,14 @@ require(
                     this.initDevice(data.devices);
                 }
                 this.render(data);
+
+                this.setOtherEvents();
+            },
+
+            setOtherEvents: function() {
+                this.listenTo(this.deviceCollections, "add", this.addDevice);
+                this.listenTo(this.rectCollections, "add", this.addRect);
+                this.listenTo(this.lineCollections, "add", this.addLine);
             },
 
             events: {
@@ -196,11 +208,13 @@ require(
 
             // events and methods
             setSelectedItem: function(data) {
+                this.clearItemToBeAdd();
                 this.itemToBeAdd = _.extend({}, data);
             },
             clearItemToBeAdd: function() {
                 if (this.elemToBeAdd) {
-                    this.elemToBeAdd.clear();
+                    this.elemToBeAdd.model.destroy();
+                    this.elemToBeAdd = null;
                 }
             },
             clearSelectedItem: function() {
@@ -208,28 +222,26 @@ require(
                 this.clearItemToBeAdd();
             },
             hover: function(event) {
-                console.log(this.itemToBeAdd.type);
                 if (this.itemToBeAdd.type && this.itemToBeAdd.value) {
                     this.showItemToBeAdd(event);
                 } else {}
             },
-            showItemToBeAdd: function(event) {
-                var group = null,
-                    rect = null,
-                    x = event.clientX,
+            getMousePos: function(event) {
+                var x = event.clientX,
                     y = event.clientY,
                     offset = $(this.svg.node).offset(),
                     docScrollTop = $(window).scrollTop(),
                     docScrollLeft = $(window).scrollLeft(),
                     scrollTop = this.$main.scrollTop() + docScrollTop,
                     scrollLeft = this.$main.scrollLeft() + docScrollLeft;
-                if (this.elemToBeAdd) {
-                    this.elemToBeAdd.clear();
-                } else {
-                    this.elemToBeAdd = this.svg.group();
-                }
-                group = this.elemToBeAdd;
-                rect = group.rect(40, 40).fill("#f06").attr({ x: x - offset.left + scrollLeft - 20, y: y - offset.top + scrollTop - 20 });
+                return {
+                    x: x - offset.left + scrollLeft,
+                    y: y - offset.top + scrollTop
+                };
+            },
+            showItemToBeAdd: function(event) {
+                var pos = this.getMousePos(event);
+                this.createItem(this.itemToBeAdd, pos, true);
             },
             notifyAddDone: function(type) {
                 if (type == this.toolView.type) {
@@ -239,23 +251,70 @@ require(
                 }
             },
             addItem: function(event) {
-                var group,
-                    x = event.clientX,
-                    y = event.clientY,
-                    offset = $(this.svg.node).offset(),
-                    docScrollTop = $(window).scrollTop(),
-                    docScrollLeft = $(window).scrollLeft(),
-                    scrollTop = this.$main.scrollTop() + docScrollTop,
-                    scrollLeft = this.$main.scrollLeft() + docScrollLeft;
-
+                var pos = this.getMousePos(event);
                 if (this.itemToBeAdd.type && this.itemToBeAdd.value) {
-                    console.log("test");
-                    group = this.svg.group();
-                    group.rect(40, 40).fill("#f06").attr({ x: x - offset.left + scrollLeft - 20, y: y - offset.top + scrollTop - 20 });
+                    this.createItem(this.itemToBeAdd, pos);
                     this.notifyAddDone(this.itemToBeAdd.type);
                     this.clearSelectedItem();
                 }
             },
+            getTypeItem: function(data) {
+                if (data.value == "rect" || data.value == "round-rect") {
+                    return this.rectCollections;
+                } else if (data.value == "line" || data.value == "polyline") {
+                    return this.lineCollections;
+                } else if (data.value) {
+                    return this.deviceCollections;
+                }
+                return null;
+            },
+            createItem: function(item, pos, isToBeAdd) {
+                var collection = this.getTypeItem(item);
+                if (!isToBeAdd) {
+                    collection.create({
+                        centerX: pos.x,
+                        centerY: pos.y,
+                        type: item.type,
+                        value: item.value
+                    });
+                } else {
+                    if (!this.elemToBeAdd) {
+                        collection.create({
+                            centerX: pos.x,
+                            centerY: pos.y,
+                            type: item.type,
+                            value: item.value
+                        }, { isToBeAdd: isToBeAdd });
+                    } else {
+                        this.elemToBeAdd.model.set({
+                            centerX: pos.x,
+                            centerY: pos.y
+                        });
+                    }
+                }
+            },
+
+            addDevice: function(device, collection, options) {
+                var view = new View.device({ model: device });
+                if (options.isToBeAdd) {
+                    this.elemToBeAdd = view;
+                }
+                this.svg.add(view.render().svg);
+            },
+            addLine: function(line, collection, options) {
+                var view = new View.line({ model: line });
+                if (options.isToBeAdd) {
+                    this.elemToBeAdd = view;
+                }
+                this.svg.add(view.render().svg);
+            },
+            addRect: function(rect, collection, options) {
+                var view = new View.rect({ model: rect });
+                if (options.isToBeAdd) {
+                    this.elemToBeAdd = view;
+                }
+                this.svg.add(view.render().svg);
+            }
         });
         var app = null;
 
