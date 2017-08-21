@@ -16,6 +16,8 @@ define(["jquery", "underscore", "backbone", "svg"], function($, _, Backbone, SVG
                 height: 0,
                 zIndex: 0,
 
+                deviceId: "",
+
                 text: "",
                 font: "",
                 fontSize: 0,

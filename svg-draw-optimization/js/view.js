@@ -108,6 +108,12 @@ define(["jquery", "underscore", "backbone", "svg"], function($, _, Backbone, SVG
     var DeviceView = View.extend({
         tagName: "g",
         className: "svg-device",
+        defaultStyle: {
+            font: "Helvetica",
+            fontSize: 12,
+            color: "#666"
+        },
+        iconPadding: 10,
         defaultSize: {
             width: 60,
             height: 60
@@ -120,14 +126,34 @@ define(["jquery", "underscore", "backbone", "svg"], function($, _, Backbone, SVG
             }, this);
         },
 
-        events: {},
+        events: {
+            "dblclick": "showDeviceIdList",
+        },
+        showDeviceIdList: function(event) {
+
+        },
 
         getImgUrl: function(type) {
             return "/imgs/" + type + ".svg";
         },
-        create: function(pos, type) {
+        create: function(pos, type, deviceId) {
             var group = this.svg,
-                img = null;
+                img = null,
+                text = null,
+                box = null;
+            deviceId = deviceId || "设置设备id";
+            text = group.text("" + deviceId)
+                .addClass("svg-device-id")
+                .font({
+                    fill: this.defaultStyle.color,
+                    family: this.defaultStyle.font,
+                    size: this.defaultStyle.size
+                });
+            box = text.rbox();
+            text.attr({
+                x: pos.x - box.width / 2,
+                y: pos.y - this.defaultSize.height / 2 - box.height - this.iconPadding
+            });
             img = group.image(this.getImgUrl(type), this.defaultSize.width, this.defaultSize.height);
             img.attr({
                 x: pos.x - this.defaultSize.width / 2,
@@ -137,7 +163,7 @@ define(["jquery", "underscore", "backbone", "svg"], function($, _, Backbone, SVG
         render: function() {
             var data = this.model.toJSON();
             this.svg.clear();
-            this.create({ x: data.centerX, y: data.centerY }, data.value);
+            this.create({ x: data.centerX, y: data.centerY }, data.value, data.deviceId);
             return this;
         },
     });

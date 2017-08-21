@@ -364,7 +364,12 @@ require(
                 devices: [{
                         type: 2,
                         name: "接地设备",
-                        src: "/imgs/2.svg"
+                        src: "/imgs/2.svg",
+                        devices: [{
+                            id: 1,
+                            name: "jack",
+                            available: true
+                        }]
                     },
                     {
                         type: 3,
