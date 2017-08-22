@@ -30,10 +30,15 @@ define(["jquery", "utils"], function($, Utils) {
                     left: offset.left + "px",
                     top: offset.top + height + gap + "px"
                 });
-            } else { // 应该传递一个事件对象
+            } else if ($target instanceof window.Event) {
                 $popup.css({
                     left: $target.clientX + "px",
                     top: $target.clientY + "px"
+                });
+            } else {
+                $popup.css({
+                    left: $target.x + "px",
+                    top: $target.y + "px"
                 });
             }
         },

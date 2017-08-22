@@ -100,6 +100,7 @@ require(
                 this.$main = this.$el.find(".draw-container");
                 this.svg = SVG("svg-wrapper").size("100%", "100%");
                 this.bg = null;
+                this.data = data;
                 this.deviceView = null;
                 this.toolView = null;
                 this.deviceCollections = new Collection.device();
@@ -295,10 +296,18 @@ require(
                 }
             },
 
+            showDeviceIdList: function(options) {
+                if (options.event) {
+                    pos = this.getMousePos(options.event);
+                }
+                this.deviceView.trigger("showDeviceIdList", { type: options.type, pos: pos });
+            },
             addDevice: function(device, collection, options) {
                 var view = new View.device({ model: device });
                 if (options.isToBeAdd) {
                     this.elemToBeAdd = view;
+                } else {
+                    this.listenTo(view, "showDeviceIdList", this.showDeviceIdList);
                 }
                 this.svg.add(view.render().svg);
             },

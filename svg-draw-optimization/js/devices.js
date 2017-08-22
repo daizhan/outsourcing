@@ -1,4 +1,4 @@
-define(["jquery", "underscore", "backbone", "svg", "templates/device-tpl"], function($, _, Backbone, SVG, tpl) {
+define(["jquery", "underscore", "backbone", "svg", "templates/device-tpl", "common"], function($, _, Backbone, SVG, tpl, C) {
     var deviceModel = Backbone.Model.extend({
         defaults: {
             devices: []
@@ -18,6 +18,9 @@ define(["jquery", "underscore", "backbone", "svg", "templates/device-tpl"], func
             $(document).on("click", function(event) {
                 self.bindBodyClickEvent(event);
             });
+            this.on({
+                "showDeviceIdList": this.showDeviceIdList
+            }, this);
         },
         template: _.template(tpl),
         render: function() {
@@ -58,6 +61,41 @@ define(["jquery", "underscore", "backbone", "svg", "templates/device-tpl"], func
                 this.cancelSelect()
             }
             this.preventBodyClear = false;
+        },
+
+        getAvailableList: function(type) {
+            var devices = this.model.get("devices"),
+                idList = [],
+                availables = [];
+            for (var i = 0, len = devices.length; i < len; i++) {
+                if (devices[i].type == type) {
+                    idList = devices[i].devices;
+                }
+            }
+            for (var i = 0, len = idList.length; i < len; i++) {
+                if (idList[i].available) {
+                    availables.push(idList[i]);
+                }
+            }
+            return availables;
+        },
+
+        showDeviceIdList: function(data) {
+            var availables = this.getAvailableList(data.type),
+                listData = [],
+                self = this;
+            if (!availables.length) {
+                C.layer.topNotify("error", { content: "该类设备下已经没有设备可以绑定", shade: false, time: 2 });
+                return;
+            }
+            for (var i = 0, len = availables.length; i < len; i++) {
+                listData.push({
+                    operate: "set-id",
+                    value: availables[i].id,
+                    text: availables[i].name
+                });
+            }
+            C.popupMenu.init(pos, { menus: listData }, function(operate, value) {});
         },
     });
 

@@ -130,7 +130,7 @@ define(["jquery", "underscore", "backbone", "svg"], function($, _, Backbone, SVG
             "dblclick": "showDeviceIdList",
         },
         showDeviceIdList: function(event) {
-
+            this.trigger("showDeviceIdList", { type: this.model.get("value"), event: event });
         },
 
         getImgUrl: function(type) {
