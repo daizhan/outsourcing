@@ -230,19 +230,6 @@ require(
                     this.showItemToBeAdd(event);
                 } else {}
             },
-            getMousePos: function(event) {
-                var x = event.clientX,
-                    y = event.clientY,
-                    offset = $(this.svg.node).offset(),
-                    docScrollTop = $(window).scrollTop(),
-                    docScrollLeft = $(window).scrollLeft(),
-                    scrollTop = this.$main.scrollTop() + docScrollTop,
-                    scrollLeft = this.$main.scrollLeft() + docScrollLeft;
-                return {
-                    x: x - offset.left + scrollLeft,
-                    y: y - offset.top + scrollTop
-                };
-            },
             showItemToBeAdd: function(event) {
                 var pos = this.getMousePos(event);
                 this.createItem(this.itemToBeAdd, pos, true);

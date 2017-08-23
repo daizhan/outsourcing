@@ -1,4 +1,4 @@
-define(["jquery", "underscore", "backbone", "svg"], function($, _, Backbone, SVG) {
+define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Backbone, SVG, C) {
     var View = Backbone.View.extend({
         initialize: function(data) {
             this.baseSvg = data.svg;
@@ -11,9 +11,43 @@ define(["jquery", "underscore", "backbone", "svg"], function($, _, Backbone, SVG
         },
         init: function() {},
         create: function(pos, type, parent) {},
+        domToSvgPos: function(pos) {
+            var svgDoc = this.getSvgRoot(),
+                $main = this.getMainContainerElem(),
+                offset = $(svgDoc.node).offset(),
+                docScrollTop = $(window).scrollTop(),
+                docScrollLeft = $(window).scrollLeft(),
+                scrollTop = $main.scrollTop() + docScrollTop,
+                scrollLeft = $main.scrollLeft() + docScrollLeft;
+            return {
+                x: pos.x - offset.left + scrollLeft,
+                y: pos.y - offset.top + scrollTop
+            };
+        },
 
-        svgToDomPos: function() {},
-        domToSvgPos: function(pos) {},
+        getSvgRoot: function(isSvgNode) {
+            return this.svg.doc();
+        },
+        getMainContainerElem: function() {
+            return $(this.svg.node).parents(".draw-container");
+        },
+
+        getMousePos: function(event) {
+            var x = event.clientX,
+                y = event.clientY;
+            return this.domToSvgPos({
+                x: x,
+                y: y
+            });
+        },
+        clearSelection: function() {
+            if (document.selection && document.selection.empty) {
+                document.selection.empty();
+            } else if (window.getSelection) {
+                var sel = window.getSelection();
+                sel.removeAllRanges();
+            }
+        },
     });
 
     var LineView = View.extend({
@@ -71,6 +105,8 @@ define(["jquery", "underscore", "backbone", "svg"], function($, _, Backbone, SVG
         defaultStyle: {
             fill: "#fff",
             strokeColor: "#333",
+            fontSize: 12,
+            color: "#666"
         },
         defaultSize: {
             width: 100,
@@ -85,9 +121,24 @@ define(["jquery", "underscore", "backbone", "svg"], function($, _, Backbone, SVG
             }, this);
         },
 
-        events: {},
-
-        create: function(pos, type) {
+        events: {
+            "dblclick": "showTextEdit",
+        },
+        showTextEdit: function(event) {
+            var box = this.svg.rbox(),
+                pos = {
+                    x: box.x,
+                    y: box.y,
+                    width: box.width,
+                    height: box.height
+                },
+                self = this;
+            this.clearSelection();
+            C.textInput.init(pos, { text: this.model.get("text") }, function(data) {
+                self.model.set({ text: data.text });
+            }, "triggerByTarget");
+        },
+        create: function(pos, type, text) {
             var group = this.svg,
                 rect = null;
             rect = group.rect(this.defaultSize.width, this.defaultSize.height);
@@ -100,11 +151,23 @@ define(["jquery", "underscore", "backbone", "svg"], function($, _, Backbone, SVG
             if (type == "round-rect") {
                 rect.radius(this.defaultSize.radius);
             }
+            if (text) {
+                text = group.text(text)
+                    .addClass("svg-rect-text")
+                    .font({
+                        fill: this.defaultStyle.color,
+                        size: this.defaultStyle.size
+                    });
+                text.attr({
+                    x: pos.x - this.defaultSize.width / 2 + 10,
+                    y: pos.y - this.defaultSize.height / 2 + 10,
+                });
+            }
         },
         render: function() {
             var data = this.model.toJSON();
             this.svg.clear();
-            this.create({ x: data.centerX, y: data.centerY }, data.value);
+            this.create({ x: data.centerX, y: data.centerY }, data.value, data.text);
             return this;
         },
     });
@@ -147,6 +210,7 @@ define(["jquery", "underscore", "backbone", "svg"], function($, _, Backbone, SVG
             }
         },
         showDeviceIdList: function(event) {
+            this.clearSelection();
             Backbone.trigger("showDeviceIdList", { type: this.model.get("value"), pos: { x: event.clientX, y: event.clientY }, id: this.id });
         },
 
