@@ -18,9 +18,10 @@ define(["jquery", "underscore", "backbone", "svg", "templates/device-tpl", "comm
             $(document).on("click", function(event) {
                 self.bindBodyClickEvent(event);
             });
-            this.on({
-                "showDeviceIdList": this.showDeviceIdList
-            }, this);
+
+            this.listenTo(Backbone, "showDeviceIdList", this.showDeviceIdList);
+            this.listenTo(Backbone, "updateDeviceIdStatus", this.updateDeviceIdStatus);
+
         },
         template: _.template(tpl),
         render: function() {
@@ -80,6 +81,26 @@ define(["jquery", "underscore", "backbone", "svg", "templates/device-tpl", "comm
             return availables;
         },
 
+        setDeviceIdStatus: function(type, id, status) {
+            var devices = this.model.get("devices"),
+                idList = [],
+                availables = [];
+            for (var i = 0, len = devices.length; i < len; i++) {
+                if (devices[i].type == type) {
+                    idList = devices[i].devices;
+                }
+            }
+            for (var i = 0, len = idList.length; i < len; i++) {
+                if (idList[i].id == id) {
+                    idList[i].available = status;
+                }
+            }
+            this.model.set("devices", devices);
+        },
+        updateDeviceIdStatus: function(options) {
+            this.setDeviceIdStatus(options.type, options.id, options.status);
+        },
+
         showDeviceIdList: function(data) {
             var availables = this.getAvailableList(data.type),
                 listData = [],
@@ -90,12 +111,15 @@ define(["jquery", "underscore", "backbone", "svg", "templates/device-tpl", "comm
             }
             for (var i = 0, len = availables.length; i < len; i++) {
                 listData.push({
-                    operate: "set-id",
+                    operate: "setId",
                     value: availables[i].id,
                     text: availables[i].name
                 });
             }
-            C.popupMenu.init(pos, { menus: listData }, function(operate, value) {});
+            C.popupMenu.init(data.pos, { menus: listData }, function(menu) {
+                self.setDeviceIdStatus(data.type, menu.value, false);
+                Backbone.trigger(menu.operate, { deviceId: menu.value, deviceName: menu.text, viewId: data.id });
+            });
         },
     });
 

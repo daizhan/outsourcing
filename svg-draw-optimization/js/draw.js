@@ -96,6 +96,7 @@ require(
         });
 
         var AppView = View.base.extend({
+
             initialize: function(data) {
                 this.$main = this.$el.find(".draw-container");
                 this.svg = SVG("svg-wrapper").size("100%", "100%");
@@ -107,6 +108,7 @@ require(
                 this.rectCollections = new Collection.rect();
                 this.lineCollections = new Collection.line();
                 this.elemToBeAdd = null;
+                this.subViews = {};
 
                 this.itemToBeAdd = {
                     type: "",
@@ -295,31 +297,36 @@ require(
                     }
                 }
             },
-
-            showDeviceIdList: function(options) {
-                if (options.event) {
-                    pos = this.getMousePos(options.event);
+            addSubView: function(view) {
+                var id = view.id || C.utils.count();
+                this.subViews[id] = view;
+                view.id = id;
+            },
+            getSubView: function(key) {
+                var view = null;
+                if (this.subViews.hasOwnProperty(key)) {
+                    view = this.subViews[key];
                 }
-                this.deviceView.trigger("showDeviceIdList", { type: options.type, pos: pos });
+                return view;
             },
             addDevice: function(device, collection, options) {
-                var view = new View.device({ model: device });
+                var view = new View.device({ model: device, viewId: C.utils.count() });
                 if (options.isToBeAdd) {
                     this.elemToBeAdd = view;
                 } else {
-                    this.listenTo(view, "showDeviceIdList", this.showDeviceIdList);
+                    this.addSubView(view);
                 }
                 this.svg.add(view.render().svg);
             },
             addLine: function(line, collection, options) {
-                var view = new View.line({ model: line });
+                var view = new View.line({ model: line, viewId: C.utils.count() });
                 if (options.isToBeAdd) {
                     this.elemToBeAdd = view;
                 }
                 this.svg.add(view.render().svg);
             },
             addRect: function(rect, collection, options) {
-                var view = new View.rect({ model: rect });
+                var view = new View.rect({ model: rect, viewId: C.utils.count() });
                 if (options.isToBeAdd) {
                     this.elemToBeAdd = view;
                 }
@@ -375,10 +382,21 @@ require(
                         name: "接地设备",
                         src: "/imgs/2.svg",
                         devices: [{
-                            id: 1,
-                            name: "jack",
-                            available: true
-                        }]
+                                id: 1,
+                                name: "jack-1",
+                                available: true
+                            },
+                            {
+                                id: 2,
+                                name: "jack-2",
+                                available: true
+                            },
+                            {
+                                id: 3,
+                                name: "jack-3",
+                                available: true
+                            },
+                        ]
                     },
                     {
                         type: 3,

@@ -12,7 +12,7 @@ define(["jquery", "utils"], function($, Utils) {
                 if (item.type == "separator") {
                     liHtml += '<li class="separator"></li>';
                 } else {
-                    liHtml += '<li class="' + item.operate + ' ' + item.status + '" data-operate="' + item.operate + '" data-value="' + item.value + '"><i></i><span>' + item.text + '</span><span class="shortcut">' + item.shortcut + '</span></li>';
+                    liHtml += '<li class="' + (item.operate || "") + ' ' + (item.status || "") + '" data-text="' + (item.text || "") + '" data-operate="' + (item.operate || "") + '" data-value="' + (item.value || "") + '"><i></i><span>' + (item.text || "") + '</span><span class="shortcut">' + (item.shortcut || "") + '</span></li>';
                 }
             }
             html = '<div class="common-popup-block menu-popup ' + className + '">\
@@ -21,7 +21,9 @@ define(["jquery", "utils"], function($, Utils) {
             $("body").append(html);
         },
         setPopupPos: function($target) {
-            var $popup = $(this.selector);
+            var $popup = $(this.selector),
+                scrollLeft = $(window).scrollLeft(),
+                scrollTop = $(window).scrollTop();
             if ($target instanceof $) {
                 var offset = $target.offset(),
                     height = $target.height(),
@@ -30,15 +32,15 @@ define(["jquery", "utils"], function($, Utils) {
                     left: offset.left + "px",
                     top: offset.top + height + gap + "px"
                 });
-            } else if ($target instanceof window.Event) {
+            } else if ($target.type == "contextmenu") {
                 $popup.css({
-                    left: $target.clientX + "px",
-                    top: $target.clientY + "px"
+                    left: $target.clientX + scrollLeft + "px",
+                    top: $target.clientY + scrollTop + "px"
                 });
             } else {
                 $popup.css({
-                    left: $target.x + "px",
-                    top: $target.y + "px"
+                    left: $target.x + scrollLeft + "px",
+                    top: $target.y + scrollTop + "px"
                 });
             }
         },
@@ -54,11 +56,12 @@ define(["jquery", "utils"], function($, Utils) {
             $popup.find("li").click(function() {
                 var $target = $(this),
                     operate = $target.attr("data-operate"),
+                    text = $target.attr("data-text"),
                     value = $target.attr("data-value");
                 if ($target.hasClass("disabled") || $target.hasClass("separator")) {
                     return;
                 }
-                callback(operate, value);
+                callback({ operate: operate, value: value, text: text });
                 self.clean();
             });
             $(document).on("click", self.bindBodyClickEvent);

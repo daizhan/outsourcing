@@ -14,5 +14,17 @@ define(["jquery"], function($) {
         encodeHtmlAndAttr: function(content) {
             return this.encodeHtmlAndAttr($("<div></div>").text(content).html());
         },
+        count: (function() {
+            var count = 0;
+            return function(num) {
+                if (typeof num != "undefined") {
+                    num = num || 0;
+                } else {
+                    num = 1;
+                }
+                count += num;
+                return count;
+            };
+        })(),
     }
 });

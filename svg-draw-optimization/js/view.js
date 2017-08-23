@@ -6,10 +6,14 @@ define(["jquery", "underscore", "backbone", "svg"], function($, _, Backbone, SVG
 
             this.listenTo(this.model, "change", this.render);
             this.listenTo(this.model, "destroy", this.remove);
+            this.id = data.viewId || 0;
             this.init(data);
         },
         init: function() {},
         create: function(pos, type, parent) {},
+
+        svgToDomPos: function() {},
+        domToSvgPos: function(pos) {},
     });
 
     var LineView = View.extend({
@@ -121,28 +125,41 @@ define(["jquery", "underscore", "backbone", "svg"], function($, _, Backbone, SVG
         init: function() {
             this.svg = new SVG.G().addClass(this.className);
             this.setElement(this.svg.node);
-            this.on({
 
-            }, this);
+            this.on({}, this);
+
+            this.listenTo(this.model, "change:deviceId", this.updateDeviceId);
+            this.listenTo(Backbone, "setId", this.setDeviceId);
         },
 
         events: {
             "dblclick": "showDeviceIdList",
         },
+        updateDeviceId: function(model, newId) {
+            var id = model.previous("deviceId");
+            if (id && id != newId) {
+                Backbone.trigger("updateDeviceIdStatus", { type: this.model.get("value"), id: id, status: true });
+            }
+        },
+        setDeviceId: function(options) {
+            if (options.viewId == this.id) {
+                this.model.set({ deviceId: options.deviceId, deviceName: options.deviceName });
+            }
+        },
         showDeviceIdList: function(event) {
-            this.trigger("showDeviceIdList", { type: this.model.get("value"), event: event });
+            Backbone.trigger("showDeviceIdList", { type: this.model.get("value"), pos: { x: event.clientX, y: event.clientY }, id: this.id });
         },
 
         getImgUrl: function(type) {
             return "/imgs/" + type + ".svg";
         },
-        create: function(pos, type, deviceId) {
+        create: function(pos, type, deviceName) {
             var group = this.svg,
                 img = null,
                 text = null,
                 box = null;
-            deviceId = deviceId || "设置设备id";
-            text = group.text("" + deviceId)
+            deviceName = deviceName || "设置设备";
+            text = group.text("" + deviceName)
                 .addClass("svg-device-id")
                 .font({
                     fill: this.defaultStyle.color,
@@ -163,7 +180,7 @@ define(["jquery", "underscore", "backbone", "svg"], function($, _, Backbone, SVG
         render: function() {
             var data = this.model.toJSON();
             this.svg.clear();
-            this.create({ x: data.centerX, y: data.centerY }, data.value, data.deviceId);
+            this.create({ x: data.centerX, y: data.centerY }, data.value, data.deviceName);
             return this;
         },
     });
