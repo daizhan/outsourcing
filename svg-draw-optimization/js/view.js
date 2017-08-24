@@ -76,6 +76,11 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             });
             return svgText;
         },
+
+        getDefaultStyle: function() {},
+        getCurrentStyle: function() {},
+        setStyle: function() {},
+
     });
 
     var LineView = View.extend({
