@@ -40,13 +40,41 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 y: y
             });
         },
-        clearSelection: function() {
-            if (document.selection && document.selection.empty) {
-                document.selection.empty();
-            } else if (window.getSelection) {
-                var sel = window.getSelection();
-                sel.removeAllRanges();
+        setSvgText: function(text, svg) {
+            var padding = {
+                    top: 2,
+                    left: 4
+                },
+                boxWidth = svg.bbox().width,
+                svgText = svg.text(""),
+                svgTspan = null,
+                textBox = null,
+                lineText = [],
+                str = "",
+                lastStr = "",
+                dy = 0;
+            for (var i = 0, len = text.length; i < len; i++) {
+                lastStr = str;
+                str += text[i];
+                svgText.tspan(str);
+                textBox = svgText.bbox();
+                if (textBox.width + padding.left * 2 > boxWidth) {
+                    lineText.push({ text: lastStr, dy: dy });
+                    dy = textBox.height;
+                    str = text[i];
+                    svgText.tspan(str);
+                }
             }
+            if (str) {
+                lineText.push({ text: str, dy: dy });
+            }
+            svgText.remove();
+            svgText = svg.text(function(add) {
+                lineText.forEach(function(item) {
+                    add.tspan(item.text).newLine();
+                });
+            });
+            return svgText;
         },
     });
 
@@ -133,18 +161,19 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                     height: box.height
                 },
                 self = this;
-            this.clearSelection();
             C.textInput.init(pos, { text: this.model.get("text") }, function(data) {
-                self.model.set({ text: data.text });
+                self.model.set({ text: data.text, width: data.width, height: data.height });
             }, "triggerByTarget");
         },
         create: function(pos, type, text) {
             var group = this.svg,
-                rect = null;
-            rect = group.rect(this.defaultSize.width, this.defaultSize.height);
+                rect = null,
+                width = this.model.get("width") || this.defaultSize.width,
+                height = this.model.get("height") || this.defaultSize.height;
+            rect = group.rect(width, height);
             rect.attr({
-                x: pos.x - this.defaultSize.width / 2,
-                y: pos.y - this.defaultSize.height / 2,
+                x: pos.x - width / 2,
+                y: pos.y - height / 2,
                 fill: this.defaultStyle.fill,
                 stroke: this.defaultStyle.strokeColor
             });
@@ -152,16 +181,12 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 rect.radius(this.defaultSize.radius);
             }
             if (text) {
-                text = group.text(text)
+                text = this.setSvgText(text, group)
                     .addClass("svg-rect-text")
-                    .font({
-                        fill: this.defaultStyle.color,
-                        size: this.defaultStyle.size
-                    });
-                text.attr({
-                    x: pos.x - this.defaultSize.width / 2 + 10,
-                    y: pos.y - this.defaultSize.height / 2 + 10,
-                });
+                    .attr({
+                        fill: this.defaultStyle.color
+                    }).leading(1);
+                text.center(pos.x, pos.y);
             }
         },
         render: function() {
@@ -210,7 +235,6 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             }
         },
         showDeviceIdList: function(event) {
-            this.clearSelection();
             Backbone.trigger("showDeviceIdList", { type: this.model.get("value"), pos: { x: event.clientX, y: event.clientY }, id: this.id });
         },
 

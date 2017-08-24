@@ -609,5 +609,13 @@ textarea {
     cursor: pointer;
 }
 
+.svg-rect-text {
+    word-break: break-all;
+}
+
+text {
+    font-family: inherit;
+}
+
 
 /* end start */

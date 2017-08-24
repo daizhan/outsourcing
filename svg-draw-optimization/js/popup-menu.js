@@ -68,7 +68,7 @@ define(["jquery", "utils"], function($, Utils) {
         },
         bindBodyClickEvent: function(event) {
             var $target = $(event.target);
-            if (Menu.triggerType != "triggerByTarget" && !$target.hasClass(Menu.name) && !$target.parents(Menu.name).length) {
+            if (Menu.triggerType != "triggerByTarget" && !$target.hasClass(Menu.name) && !$target.parents(Menu.selector).length) {
                 Menu.clean();
             }
             Menu.triggerType = "";

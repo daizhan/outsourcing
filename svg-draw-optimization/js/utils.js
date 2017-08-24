@@ -12,7 +12,7 @@ define(["jquery"], function($) {
             return $("<div></div>").text(html).html();
         },
         encodeHtmlAndAttr: function(content) {
-            return this.encodeHtmlAndAttr($("<div></div>").text(content).html());
+            return this.encodeHtmlAttr($("<div></div>").text(content).html());
         },
         count: (function() {
             var count = 0;
