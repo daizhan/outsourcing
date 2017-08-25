@@ -19,7 +19,7 @@ define(function() {
                                                     <span class="big-font-size"></span>\
                                                     <span class="small-font-size"></span>\
                                                 </div>\
-                                            <% } else if (attr.name == "offset") { %>\
+                                            <% } else if (attr.name == "pos") { %>\
                                                 <p>\
                                                     <span>X: <i class="left">123</i>px</span>\
                                                     <span>Y: <i class="top">456</i>px</span>\
@@ -33,10 +33,10 @@ define(function() {
                                                 <p class="bg-icon"></p>\
                                             <% } %>\
                                         </li>\
-                                    <% } %>\
+                                    <% }) %>\
                                 </ul>\
                             </li>\
-                        <% } %>\
+                        <% }) %>\
                     </ul>\
                 <% } %>';
     return html;

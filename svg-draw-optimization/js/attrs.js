@@ -1,5 +1,5 @@
 define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl"], function($, _, Backbone, SVG, tpl) {
-    var attrModel = Backbone.View.extend({
+    var attrModel = Backbone.Model.extend({
         defaults: {
             undo: {
                 className: "undo",
@@ -21,8 +21,9 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl"], functi
             },
             scale: {
                 className: "scale",
-                value: "",
-                available: false,
+                value: 0,
+                default: 100,
+                available: true,
                 list: [
                     200, 150, 125, 110, 100, 90, 75, 50, 25
                 ],
@@ -31,6 +32,7 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl"], functi
             font: {
                 className: "font-family",
                 value: "",
+                default: "Microsoft Yahei",
                 list: [
                     "Helvetica Neue",
                     "Helvetica",
@@ -46,13 +48,15 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl"], functi
             },
             fontSize: {
                 className: "font-size",
-                value: "",
+                value: 0,
+                default: 14,
                 available: false,
                 text: "字体大小",
             },
             textColor: {
                 className: "color",
                 value: "",
+                default: "#333",
                 available: false,
                 text: "字体颜色",
             },
@@ -80,24 +84,28 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl"], functi
                     "arrange-middle",
                     "arrange-middle",
                 ],
+                className: "arrange-left",
                 available: false,
                 text: "对齐",
             },
             fillColor: {
                 className: "fill-color",
                 value: "",
+                default: "#fff",
                 available: false,
                 text: "填充色",
             },
             borderColor: {
                 className: "stroke-color",
                 value: "",
+                default: "#666",
                 available: false,
                 text: "边框色",
             },
             borderStyle: {
                 className: "border-style",
                 value: "",
+                default: "solid",
                 list: [
                     "solid", "dashed", "dot"
                 ],
@@ -110,6 +118,7 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl"], functi
                 list: [
                     1, 2, 3, 4, 5, 6, 8, 10
                 ],
+                default: 1,
                 available: false,
                 text: "边框宽度",
             },
@@ -119,11 +128,13 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl"], functi
                 list: [
                     "line-no-arrow", "line-with-arrow"
                 ],
+                default: "line-no-arrow",
                 available: false,
                 text: "起点类型",
             },
             endArrow: {
                 className: "line-end",
+                default: "line-no-arrow",
                 value: "",
                 list: [
                     "line-no-arrow", "line-with-arrow"
@@ -179,10 +190,20 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl"], functi
                 w: "",
                 available: false
             },
-        }
+        },
+        sync: function(mothod, model, options) {
+            model.set("id", model.cid);
+            options.success({});
+        },
     });
     var attrView = Backbone.View.extend({
-        svgElemDisabledAtts: {
+        commonAttrs: [
+            "redo", "undo", "formatBrush", "scale", "moveUp", "moveDown", "copy", "cut", "paste", "delete", "pos", "size"
+        ],
+        selectedAttrs: [
+            "formatBrush", "moveUp", "moveDown", "copy", "cut", "delete"
+        ],
+        svgElemDisabledAttrs: {
             line: ["font", "fontSize", "textColor", "textBold", "textItalic", "arrange", "fillColor", "size"],
             rect: ["startArrow", "endArrow"],
             device: ["fillColor", "borderColor", "borderStyle", "borderWidth", "startArrow", "endArrow"]
@@ -209,14 +230,18 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl"], functi
             },
             {
                 name: "pos",
-                attrs: ["offset", "size"]
+                attrs: ["pos", "size"]
             }
         ],
         tagName: "div",
         className: "top-attrs",
         initialize: function() {
             var self = this;
-            this.on({}, this);
+            this.on({
+                showTypeAttr: this.showTypeAttr
+            }, this);
+
+            this.listenTo(this.model, "sync", this.render);
         },
         template: _.template(tpl),
         getAttrClassName: function(attr, attrData) {
@@ -256,7 +281,7 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl"], functi
                         data = {
                             text: attrData.text,
                             name: attr,
-                            value: attrData.value,
+                            value: attrData.value || attrData.default,
                             className: self.getAttrClassName(attr, attrData)
                         };
                         category.attrs.push(data);
@@ -266,7 +291,7 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl"], functi
                     data.push(category);
                 }
             });
-            return data;
+            return {attrCategories: data};
         },
         render: function() {
             this.$el.html(this.template(this.formatData()));
@@ -277,10 +302,29 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl"], functi
         },
 
         // events
+        showTypeAttr: function(options){
+            var self = this,
+                disabledAttr = this.svgElemDisabledAttrs[options.type],
+                modelData = this.model.toJSON();
+            if (!disabledAttr) {
+                disabledAttr = [];
+            }
+            _.each(modelData, function(attr, key){
+                if (disabledAttr.indexOf(key) != -1) {
+                    attr.available = false;
+                    attr.value = "";
+                } else if (self.selectedAttrs.indexOf(key) != -1) {
+                    attr.available = true;
+                } else if (self.commonAttrs.indexOf(key) == -1) {
+                    attr.available = true;
+                }
+            });
+            this.model.save(modelData);
+        },
     });
 
     return {
-        attrView: attrView,
-        attrModel: attrModel
+        view: attrView,
+        model: attrModel
     }
 });

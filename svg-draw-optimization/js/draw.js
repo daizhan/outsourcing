@@ -98,15 +98,19 @@ require(
         var AppView = View.base.extend({
 
             initialize: function(data) {
-                this.$main = this.$el.find(".draw-container");
-                this.svg = SVG("svg-wrapper").size("100%", "100%");
-                this.bg = null;
                 this.data = data;
+                this.$main = $("<div></div>").addClass("draw-container");
+                this.$el.append(this.$main);
+
+                this.svg = null;
+                this.bg = null;
                 this.deviceView = null;
                 this.toolView = null;
+                this.attrView = null;
                 this.deviceCollections = new Collection.device();
                 this.rectCollections = new Collection.rect();
                 this.lineCollections = new Collection.line();
+
                 this.elemToBeAdd = null;
                 this.subViews = {};
 
@@ -123,11 +127,15 @@ require(
                 this.selectedItem = [];
 
                 if (data.isEdit) {
-                    this.setRightBtnMenu();
+                    this.$main.addClass("can-edit");
+                    this.initAttr();
+                    this.render(data);
                     this.initTool(data.tools);
                     this.initDevice(data.devices);
+                    this.setRightBtnMenu();
+                } else {
+                    this.render(data);
                 }
-                this.render(data);
 
                 this.setOtherEvents();
             },
@@ -178,6 +186,9 @@ require(
                 }
             },
             render: function(data) {
+                var $elem = $("<div></div>").addClass("draw-content");
+                this.$main.append($elem.attr("id", "svg-wrapper"));
+                this.svg = SVG($elem[0]).size("100%", "100%");
                 this.renderGrid();
             },
             setRightBtnMenu: function() {
@@ -190,6 +201,11 @@ require(
                         return false;
                     }
                 });
+            },
+
+            initAttr: function() {
+                this.attrView = new Attr.view({ model: new Attr.model()});
+                this.$main.append(this.attrView.render().el);
             },
 
             initDevice: function(devices) {
@@ -302,6 +318,7 @@ require(
                     this.elemToBeAdd = view;
                 } else {
                     this.addSubView(view);
+                    this.attrView.trigger("showTypeAttr", {type: "device"});
                 }
                 this.svg.add(view.render().svg);
             },
@@ -309,6 +326,8 @@ require(
                 var view = new View.line({ model: line, viewId: C.utils.count() });
                 if (options.isToBeAdd) {
                     this.elemToBeAdd = view;
+                } else {
+                    this.attrView.trigger("showTypeAttr", {type: "line"});
                 }
                 this.svg.add(view.render().svg);
             },
@@ -316,6 +335,8 @@ require(
                 var view = new View.rect({ model: rect, viewId: C.utils.count() });
                 if (options.isToBeAdd) {
                     this.elemToBeAdd = view;
+                } else {
+                    this.attrView.trigger("showTypeAttr", {type: "rect"});
                 }
                 this.svg.add(view.render().svg);
             }
