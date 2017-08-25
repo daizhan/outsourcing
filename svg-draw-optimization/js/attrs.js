@@ -134,7 +134,7 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl"], functi
             },
             endArrow: {
                 className: "line-end",
-                default: "line-no-arrow",
+                default: "line-with-arrow",
                 value: "",
                 list: [
                     "line-no-arrow", "line-with-arrow"
@@ -260,6 +260,8 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl"], functi
                 }
                 if (attr == "fontSize") {
                     className.push("no-padding");
+                } else if (attr == "startArrow" || attr == "endArrow") {
+                    className.push(attrData.value || attrData.default);
                 }
                 className.push(attrData.className);
             }
