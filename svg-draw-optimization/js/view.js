@@ -422,20 +422,21 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 x: pos.x - box.width / 2,
                 y: pos.y - this.defaultSize.height / 2 - box.height - this.iconPadding
             });
-            img = group.image(this.getImgUrl(type), this.defaultSize.width, this.defaultSize.height);
-            img.attr({
-                x: pos.x - this.defaultSize.width / 2,
-                y: pos.y - this.defaultSize.height / 2
-            });
+            img = group.image(this.getImgUrl(type), this.defaultSize.width, this.defaultSize.height)
+                .attr({
+                    x: pos.x - this.defaultSize.width / 2,
+                    y: pos.y - this.defaultSize.height / 2
+                });
             this.deviceGroup = group;
-            this.createConnectPoints(group);
-            this.createBorder(group);
         },
         render: function() {
             var data = this.model.toJSON();
-            this.svg.clear();
+            if (this.deviceGroup) {
+                this.svg.clear();
+            }
             this.create({ x: data.centerX, y: data.centerY }, data.value, data.deviceName);
-            console.log("render");
+            this.createConnectPoints(this.deviceGroup);
+            this.createBorder(this.deviceGroup);
             return this;
         },
     });

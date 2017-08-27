@@ -321,7 +321,6 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
 
         // events
         showTypeAttr: function(options){
-            console.log(options);
             if (typeof options == "undefined") {
                 this.model.save(this.model.defaults());
                 return;

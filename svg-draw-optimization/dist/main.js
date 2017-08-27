@@ -640,7 +640,6 @@
             } else {
                 this.bg = this.svg.group();
             }
-            console.log(this.bg);
             for (i = 0; i <= max; i += gap) {
                 if (i <= box.height) { // 横线
                     path = this.bg.path("M " + 0 + " " + i + " L " + box.width + " " + i);

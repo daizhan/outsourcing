@@ -145,7 +145,7 @@ require(
                 var self = this;
                 $(document).click(function(event){
                     var $target = $(event.target),
-                        targetClasses = ["svg-line", "svg-rect", "svg-device", "top-attrs"];
+                        targetClasses = ["svg-line", "svg-rect", "svg-device", "top-attrs", "common-popup-block"];
                     if (self.hasItemSelected) {
                         self.hasItemSelected = false;
                         return;
