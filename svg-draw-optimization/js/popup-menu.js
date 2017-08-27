@@ -12,7 +12,7 @@ define(["jquery", "utils"], function($, Utils) {
                 if (item.type == "separator") {
                     liHtml += '<li class="separator"></li>';
                 } else {
-                    liHtml += '<li class="' + (item.operate || "") + ' ' + (item.status || "") + '" data-text="' + (item.text || "") + '" data-operate="' + (item.operate || "") + '" data-value="' + (item.value || "") + '"><i></i><span>' + (item.text || "") + '</span><span class="shortcut">' + (item.shortcut || "") + '</span></li>';
+                    liHtml += '<li class="' + (item.operate || "") + ' ' + (item.status || "") + '" data-text="' + (item.text || "") + '" data-operate="' + (item.operate || "") + '" data-value="' + (item.value || "") + '"><i></i><span class="text">' + (item.text || "") + '</span><span class="shortcut">' + (item.shortcut || "") + '</span></li>';
                 }
             }
             html = '<div class="common-popup-block menu-popup ' + className + '">\

@@ -144,6 +144,11 @@ require(
                 this.listenTo(this.deviceCollections, "add", this.addDevice);
                 this.listenTo(this.rectCollections, "add", this.addRect);
                 this.listenTo(this.lineCollections, "add", this.addLine);
+
+                this.listenTo(Backbone, "setScale", this.scaleSvg);
+            },
+            scaleSvg: function(options) {
+                C.layer.topNotify("info", {content: "scale page " + options.value + "%", shade: false, time: 2});
             },
 
             events: {
@@ -154,8 +159,8 @@ require(
                 var gap = 12,
                     box = this.svg.rbox(),
                     start, end,
-                    shadowColor = "#ccc",
-                    deepColor = "#999",
+                    shadowColor = "#f2f2f2",
+                    deepColor = "#ccc",
                     lineWidth = 1,
                     path,
                     max = Math.max(box.width, box.height);

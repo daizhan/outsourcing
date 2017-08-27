@@ -7,6 +7,22 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             this.listenTo(this.model, "change", this.render);
             this.listenTo(this.model, "destroy", this.remove);
             this.id = data.viewId || 0;
+
+            this.listenTo(Backbone, "setFont", this.setFont);
+            this.listenTo(Backbone, "setFontSize", this.setFontSize);
+            this.listenTo(Backbone, "setTextColor", this.setTextColor);
+
+            this.listenTo(Backbone, "setFillColor", this.setFillColor);
+
+            this.listenTo(Backbone, "setBorderColor", this.setBorderColor);
+            this.listenTo(Backbone, "setBorderWidth", this.setBorderWidth);
+            this.listenTo(Backbone, "setBorderStyle", this.setBorderStyle);
+
+            this.listenTo(Backbone, "setStartArrow", this.setLinePoint);
+            this.listenTo(Backbone, "setEndArrow", this.setLinePoint);
+
+            this.listenTo(Backbone, "setArrange", this.setArrange);
+
             this.init(data);
         },
         init: function() {},
@@ -81,6 +97,35 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         getCurrentStyle: function() {},
         setStyle: function() {},
 
+        setFont: function(options){
+            C.layer.topNotify("info", {content: "set font " + options.value, shade: false, time: 2});
+        },
+        setFontSize: function(options){
+            C.layer.topNotify("info", {content: "set font size" + options.value + "px", shade: false, time: 2});
+        },
+
+        setTextColor: function(options){
+            C.layer.topNotify("info", {content: "set text color #" + options.value, shade: false, time: 2});
+        },
+        setFillColor: function(options){
+            C.layer.topNotify("info", {content: "set fill color #" + options.value, shade: false, time: 2});
+        },
+        setBorderColor: function(options){
+            C.layer.topNotify("info", {content: "set border color #" + options.value, shade: false, time: 2});
+        },
+        setLinePoint: function(options){
+            C.layer.topNotify("info", {content: "set line point " + options.value, shade: false, time: 2});
+        },
+        setBorderWidth: function(options){
+            C.layer.topNotify("info", {content: "set border width" + options.value, shade: false, time: 2});
+        },
+        setBorderStyle: function(options){
+            C.layer.topNotify("info", {content: "set border style " + options.value, shade: false, time: 2});
+        },
+
+        setArrange: function(options){
+            C.layer.topNotify("info", {content: "set arrange " + options.value, shade: false, time: 2});
+        },
     });
 
     var LineView = View.extend({

@@ -223,7 +223,6 @@ textarea {
 .draw-container .top-attrs .attrs li.has-value p.bg-icon {
     top: 1px;
     border-bottom: 2px solid transparent;
-    border-bottom-color: red;
 }
 
 .draw-container .top-attrs .attrs li.undo p.bg-icon {
@@ -306,6 +305,14 @@ textarea {
     height: 10px;
     margin: 5px 2px 5px 0;
     background-position: -32px -329px;
+}
+.draw-container .top-attrs .attrs li.line-start.line-no-arrow p.bg-icon,
+.draw-container .top-attrs .attrs li.line-start.line-with-arrow p.bg-icon {
+    -webkit-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    -ms-transform: rotate(180deg);
+    -o-transform: rotate(180deg);
+    transform: rotate(180deg);
 }
 
 .draw-container .top-attrs .attrs li.line-with-arrow p.bg-icon {

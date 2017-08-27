@@ -30,7 +30,11 @@ define(function() {
                                                     <span>H: <i class="height">456</i>px</span>\
                                                 </p>\
                                             <% } else { %>\
-                                                <p class="bg-icon"></p>\
+                                                <% if (attr.className.indexOf("has-value")) { %>\
+                                                    <p class="bg-icon" style="border-bottom-color: #<%= attr.value %>;"></p>\
+                                                <% } else { %>\
+                                                    <p class="bg-icon"></p>\
+                                                <% } %>\
                                             <% } %>\
                                         </li>\
                                     <% }) %>\

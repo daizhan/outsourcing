@@ -1,4 +1,4 @@
-define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl"], function($, _, Backbone, SVG, tpl) {
+define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common"], function($, _, Backbone, SVG, tpl, C) {
     var attrModel = Backbone.Model.extend({
         defaults: {
             undo: {
@@ -52,11 +52,13 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl"], functi
                 default: 14,
                 available: false,
                 text: "字体大小",
+                max: 72,
+                min: 10
             },
             textColor: {
                 className: "color",
                 value: "",
-                default: "#333",
+                default: "333",
                 available: false,
                 text: "字体颜色",
             },
@@ -75,30 +77,32 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl"], functi
             arrange: {
                 value: "",
                 list: [
-                    "arrange-left",
-                    "arrange-center",
-                    "arrange-right",
-                    "arrange-top",
-                    "arrange-bottom",
-                    "arrange-middle",
-                    "arrange-middle",
-                    "arrange-middle",
+                    {value: "arrange-left", text: "左对齐"},
+                    {value: "arrange-right", text: "右对齐"},
+                    {value: "arrange-top", text: "顶对齐"},
+                    {value: "arrange-bottom", text: "底对齐"},
+                    {value: "arrange-center", text: "水平居中"},
+                    {value: "arrange-middle", text: "垂直居中"},
+                    {value: "arrange-center-middle", text: "水平垂直居中"},
+                    {value: "arrange-h", text: "水平分布"},
+                    {value: "arrange-v", text: "垂直分布"}
                 ],
                 className: "arrange-left",
+                default: "arrange-left",
                 available: false,
                 text: "对齐",
             },
             fillColor: {
                 className: "fill-color",
                 value: "",
-                default: "#fff",
+                default: "fff",
                 available: false,
                 text: "填充色",
             },
             borderColor: {
                 className: "stroke-color",
                 value: "",
-                default: "#666",
+                default: "666",
                 available: false,
                 text: "边框色",
             },
@@ -107,7 +111,9 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl"], functi
                 value: "",
                 default: "solid",
                 list: [
-                    "solid", "dashed", "dot"
+                    { value: "solid", text: ""},
+                    { value: "dashed", text: ""},
+                    { value: "dot", text: ""}
                 ],
                 available: false,
                 text: "边框类型",
@@ -126,7 +132,8 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl"], functi
                 className: "line-start",
                 value: "",
                 list: [
-                    "line-no-arrow", "line-with-arrow"
+                    { value: "line-no-arrow", text: "直线"},
+                    { value: "line-with-arrow", text: "实心箭头"}
                 ],
                 default: "line-no-arrow",
                 available: false,
@@ -137,7 +144,8 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl"], functi
                 default: "line-with-arrow",
                 value: "",
                 list: [
-                    "line-no-arrow", "line-with-arrow"
+                    { value: "line-no-arrow", text: "直线"},
+                    { value: "line-with-arrow", text: "实心箭头"}
                 ],
                 available: false,
                 text: "终点类型",
@@ -190,6 +198,7 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl"], functi
                 w: "",
                 available: false
             },
+            viewId: 0,
         },
         sync: function(mothod, model, options) {
             model.set("id", model.cid);
@@ -256,7 +265,7 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl"], functi
                     className.push("with-arrow");
                 }
                 if ((["textColor", "fillColor", "borderColor"]).indexOf(attr) != -1) {
-                    className.push("has-value");
+                    className.push("has-value with-arrow");
                 }
                 if (attr == "fontSize") {
                     className.push("no-padding");
@@ -300,7 +309,14 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl"], functi
             return this;
         },
         events: {
-            "mousedown li": "selectTool",
+            "click .attrs li": "showAttrItems",
+
+            "keydown .scale input": "manualSetScale",
+            "focus .scale input": "manualSetScale",
+
+            "click .font-size span": "modifyFontSize",
+            "keydown .font-size input": "manualSetFontSize",
+            "focus .font-size input": "manualSetFontSize",
         },
 
         // events
@@ -322,6 +338,271 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl"], functi
                 }
             });
             this.model.save(modelData);
+        },
+        setAttr: function(options) {
+            var attr = this.model.get(options.name),
+                data = {},
+                value = options.value;
+            if (options.check) {
+                value = this[options.check](options.value);
+            }
+            attr.value = value;
+            data[options.name] = attr;
+            this.model.save(attr);
+            Backbone.trigger("set" + options.name[0].toUpperCase() + options.name.slice(1), { value: value });
+        },
+        getProperFontSizeValue: function(value){
+            var fontSize = this.model.get("fontSize"),
+                value = parseInt(value, 10);
+            if (!value) {
+                value = fontSize.default;
+            } else if (value <fontSize.min) {
+                value = fontSize.min;
+            } else if (value > fontSize.max) {
+                value = fontSize.max;
+            }
+            return value;
+        },
+        manualSetFontSize: function(event) {
+            if (event.type == "focus" || event.type == "focusin") {
+                event.target.select();
+            } else if (event.keyCode == 13) {
+                var value = event.target.value;
+                this.setAttr({
+                    name: "fontSize",
+                    value: value,
+                    check: "getProperFontSizeValue"
+                });
+                event.target.blur();
+            }
+        },
+        modifyFontSize: function(event){
+            var fontSize = this.model.get("fontSize"),
+                $target = $(event.target),
+                value = fontSize.value || fontSize.default;
+            if ($target.hasClass("big-font-size")) {
+                value += 1;
+            } else {
+                value -= 1;
+            }
+            this.setAttr({
+                name: "fontSize",
+                value: value,
+                check: "getProperFontSizeValue"
+            });
+        },
+        getProperScaleValue: function(value){
+            var scale = this.model.get("scale"),
+                value = parseInt(value);
+            if (!value) {
+                value = scale.default;
+            }
+            if (value > scale.list[0]) {
+                value = scale.list[0];
+            } else if (value < scale.list[scale.list.length - 1]) {
+                value = scale.list[scale.list.length - 1];
+            }
+            return value;
+        },
+        manualSetScale: function(event){
+            if (event.type == "focus" || event.type == "focusin") {
+                event.target.select();
+            } else if (event.keyCode == 13) {
+                var value = event.target.value;
+                this.setAttr({
+                    name: "scale",
+                    value: value,
+                    check: "getProperScaleValue"
+                });
+                event.target.blur();
+            }
+        },
+        showScaleItems: function($target){
+            var self = this,
+                scale = this.model.get("scale"),
+                data = {
+                    type: "with-selected no-icon",
+                    menus: []
+                };
+            scale.list.forEach(function(item){
+                var isSelected = false,
+                    selectedValue = scale.value || scale.default;
+                if (item == selectedValue) {
+                    isSelected = true;
+                }
+                data.menus.push({
+                    operate: "setScale",
+                    status: isSelected ? "selected" : "",
+                    value: item,
+                    text: item + "%",
+                    shortcut: ""
+                });
+            });
+            C.popupMenu.init($target, data, function(data){
+                self.setAttr({
+                    name: "scale",
+                    value: data.value,
+                    check: "getProperScaleValue"
+                });
+            }, "triggerByTarget");
+        },
+        showFontItems: function($target){
+            var self = this,
+            font = this.model.get("font"),
+            data = {
+                type: "with-selected no-icon",
+                menus: []
+            };
+            font.list.forEach(function(item){
+                var isSelected = false,
+                    selectedValue = font.value || font.default;
+                if (item == selectedValue) {
+                    isSelected = true;
+                }
+                data.menus.push({
+                    operate: "setFont",
+                    status: isSelected ? "selected" : "",
+                    value: item,
+                    text: item,
+                    shortcut: ""
+                });
+            });
+            C.popupMenu.init($target, data, function(data){
+                self.setAttr({ name: "font", value: data.value });
+            }, "triggerByTarget"); 
+        },
+        showColorItems: function($target, attr){
+            var self = this,
+                color = this.model.get(attr),
+                value = color.value || color.default;
+            C.colorPicker.init($target, value, function(color) {
+                self.setAttr({ name: attr, value: color });
+            }, "triggerByTarget");
+        },
+        showLineArrowItems: function($target, attrName){
+            var self = this,
+                attr = this.model.get(attrName),
+                data = {
+                    type: "with-selected " + attr.className,
+                    menus: []
+                };
+            attr.list.forEach(function(item){
+                var isSelected = false,
+                    selectedValue = attr.value || attr.default;
+                if (item.value == selectedValue) {
+                    isSelected = true;
+                }
+                data.menus.push({
+                    operate: item.value,
+                    status: isSelected ? "selected" : "",
+                    value: item.value,
+                    text: item.text,
+                    shortcut: ""
+                });
+            });
+            C.popupMenu.init($target, data, function(data){
+                self.setAttr({ name: attrName, value: data.value });
+            }, "triggerByTarget");
+        },
+        showBorderWidthItems: function($target){
+            var self = this,
+            attr = this.model.get("borderWidth"),
+            data = {
+                type: "with-selected no-icon",
+                menus: []
+            };
+            attr.list.forEach(function(item){
+                var isSelected = false,
+                    selectedValue = attr.value || attr.default;
+                if (item == selectedValue) {
+                    isSelected = true;
+                }
+                data.menus.push({
+                    operate: "setBorderWidth",
+                    status: isSelected ? "selected" : "",
+                    value: item,
+                    text: item + "px",
+                    shortcut: ""
+                });
+            });
+            C.popupMenu.init($target, data, function(data){
+                self.setAttr({ name: "borderWidth", value: data.value });
+            }, "triggerByTarget");
+        },
+        showBorderStyleItems: function($target){
+            var self = this,
+            attr = this.model.get("borderStyle"),
+            data = {
+                type: "with-selected no-icon set-border-style",
+                menus: []
+            };
+            attr.list.forEach(function(item){
+                var isSelected = false,
+                    selectedValue = attr.value || attr.default;
+                if (item.value == selectedValue) {
+                    isSelected = true;
+                }
+                data.menus.push({
+                    operate: "setBorderStyle",
+                    status: isSelected ? "selected" : "",
+                    value: item.value,
+                    text: item.text,
+                    shortcut: ""
+                });
+            });
+            C.popupMenu.init($target, data, function(data){
+                self.setAttr({ name: "borderStyle", value: data.value });
+            }, "triggerByTarget");
+        },
+        showArrangeItems: function($target){
+            var self = this,
+            attr = this.model.get("arrange"),
+            data = {
+                type: "with-selected no-icon",
+                menus: []
+            };
+            attr.list.forEach(function(item){
+                var isSelected = false,
+                    selectedValue = attr.value || attr.default;
+                if (item.value == selectedValue) {
+                    isSelected = true;
+                }
+                data.menus.push({
+                    operate: "setArrange",
+                    status: isSelected ? "selected" : "",
+                    value: item.value,
+                    text: item.text,
+                    shortcut: ""
+                });
+            });
+            C.popupMenu.init($target, data, function(data){
+                self.setAttr({ name: "arrange", value: data.value });
+            }, "triggerByTarget");
+        },
+        showAttrItems: function(event){
+            var $target = $(event.currentTarget),
+                attr = $target.attr("data-attr");
+            if ($target.hasClass("disabled")) {
+                return;
+            }
+            if (attr == "scale") {
+                if (event.target.nodeName != "INPUT") {
+                    this.showScaleItems($target);
+                }
+            } else if (attr == "font"){
+                this.showFontItems($target);
+            } else if ((["textColor", "fillColor", "borderColor"]).indexOf(attr) != -1){
+                this.showColorItems($target, attr);
+            } else if (attr == "startArrow" || attr == "endArrow"){
+                this.showLineArrowItems($target, attr);
+            } else if (attr == "borderStyle"){
+                this.showBorderStyleItems($target);
+            } else if (attr == "borderWidth"){
+                this.showBorderWidthItems($target);
+            } else if (attr == "arrange"){
+                this.showArrangeItems($target);
+            } else {
+            }
         },
     });
 

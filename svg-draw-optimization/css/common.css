@@ -505,6 +505,9 @@ body .layui-m-layer .layui-m-layer-msg {
     background: url(../imgs/sprite.png) no-repeat;
     background-position: -40px -100px;
 }
+.menu-popup.no-icon i {
+    display: none;
+}
 
 .menu-popup li.disabled i {
     background: url(../imgs/sprite_disabled.png) no-repeat;
@@ -575,6 +578,21 @@ body .layui-m-layer .layui-m-layer-msg {
     margin-top: -5px;
     background-position: -32px -329px;
 }
+.menu-popup.line-start li.line-no-arrow i,
+.menu-popup.line-start li.line-with-arrow i {
+    margin-top: 8px;
+    -webkit-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    -ms-transform: rotate(180deg);
+    -o-transform: rotate(180deg);
+    transform: rotate(180deg);
+}
+.menu-popup.line-end li.line-no-arrow i {
+    margin-top: 8px;
+}
+.menu-popup.line-end li.line-with-arrow i {
+    margin-top: 9px;
+}
 
 .menu-popup li.line-with-arrow i {
     height: 10px;
@@ -596,6 +614,22 @@ body .layui-m-layer .layui-m-layer-msg {
 
 .menu-popup li.delete i {
     background-position: 0 -480px;
+}
+.menu-popup.set-border-style span.text{
+    border-top: 2px solid #333;
+    height: 2px;
+    width: 60px;
+    margin-right: -10px;
+    display: inline-block;
+}
+.menu-popup.set-border-style [data-value='solid'] span.text{
+    border-top-style: solid;
+}
+.menu-popup.set-border-style [data-value='dashed'] span.text{
+    border-top-style: dashed;
+}
+.menu-popup.set-border-style [data-value='dot'] span.text{
+    border-top-style: dotted;
 }
 
 .color-picker {
