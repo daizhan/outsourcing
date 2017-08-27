@@ -23,6 +23,11 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
 
             this.listenTo(Backbone, "setArrange", this.setArrange);
 
+            this.on({
+                "setSelected": this.selectedView
+            }, this);
+            this.listenTo(Backbone, "removeSelected", this.removeSelected);
+
             this.init(data);
         },
         init: function() {},
@@ -126,6 +131,100 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         setArrange: function(options){
             C.layer.topNotify("info", {content: "set arrange " + options.value, shade: false, time: 2});
         },
+
+        createBorder: function(positionGroup, isShow){
+            var padding = 0,
+                corderWidth = 6,
+                box = positionGroup.bbox(),
+                group = this.svg.group().addClass("svg-group-border"),
+                centerPoints = [
+                    box,
+                    {cx: box.cx - box.width/2 - padding, cy: box.cy - box.height/2 - padding, width: corderWidth, height: corderWidth},
+                    {cx: box.cx + box.width/2 + padding, cy: box.cy - box.height/2 - padding, width: corderWidth, height: corderWidth},
+                    {cx: box.cx + box.width/2 + padding, cy: box.cy + box.height/2 + padding, width: corderWidth, height: corderWidth},
+                    {cx: box.cx - box.width/2 - padding, cy: box.cy + box.height/2 + padding, width: corderWidth, height: corderWidth},
+                ],
+                path = null;
+            if (!isShow) {
+                group.addClass("dsn");
+            }
+            group.back();
+            this.borderGroup = group;
+            for (var i = 0, len = centerPoints.length; i < len; i ++) {
+                box = centerPoints[i];
+                path = group.path(
+                    "M " + (box.cx - box.width/2) + " " + (box.cy - box.height/2) +
+                    "L " + (box.cx + box.width/2) + " " + (box.cy - box.height/2) +
+                    "L " + (box.cx + box.width/2) + " " + (box.cy + box.height/2) +
+                    "L " + (box.cx - box.width/2) + " " + (box.cy + box.height/2) +
+                    "Z"
+                );
+                path.stroke({ color: "#60f"})
+                    .fill("#fff");
+                if (i != 0) {
+                    path.addClass("svg-border-corner");
+                    if (i % 2 == 1) {
+                        path.addClass("svg-border-corner svg-cursor-nwse");
+                    } else {
+                        path.addClass("svg-border-corner svg-cursor-nesw");
+                    }
+                }
+            }
+        },
+
+        createConnectPoints: function(positionGroup, isShow){
+            var padding = 0,
+                corderWidth = 6,
+                box = positionGroup.bbox(),
+                group = this.svg.group().addClass("svg-group-points"),
+                centerPoints = [
+                    {cx: box.cx, cy: box.cy - box.height/2 - padding, width: corderWidth},
+                    {cx: box.cx + box.width/2 + padding, cy: box.cy, width: corderWidth},
+                    {cx: box.cx, cy: box.cy + box.height/2 + padding, width: corderWidth},
+                    {cx: box.cx - box.width/2 - padding, cy: box.cy, width: corderWidth},
+                ],
+                circle = null;
+            if (!isShow) {
+                group.addClass("dsn");
+            }
+            this.pointGroup = group;
+            for (var i = 0, len = centerPoints.length; i < len; i ++) {
+                box = centerPoints[i];
+                circle = group.circle(box.width).center(box.cx, box.cy)
+                circle.fill("#999");
+            }
+        },
+        setPointGroupStatus: function(isShow){
+            if (!this.pointGroup) {
+                return;
+            }
+            if (isShow) {
+                this.pointGroup.removeClass("dsn");
+            } else {
+                this.pointGroup.addClass("dsn");
+            }
+        },
+        setBorderGroupStatus: function(isShow){
+            if (!this.borderGroup) {
+                return;
+            }
+            if (isShow) {
+                this.borderGroup.removeClass("dsn");
+            } else {
+                this.borderGroup.addClass("dsn");
+            }
+        },
+        removeSelected: function(options){
+            if (!options.viewId || options.viewId != this.id) {
+                this.setBorderGroupStatus(false);
+            }
+        },
+        selectedView: function(){
+            var type = this.model.get("type");
+            Backbone.trigger("removeSelected", {viewId: this.id});
+            Backbone.trigger("showTypeAttr", {type: type == "device" ? type : this.model.get("value")});
+            this.setBorderGroupStatus(true);
+        },
     });
 
     var LineView = View.extend({
@@ -193,6 +292,9 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         },
         init: function() {
             this.svg = new SVG.G().addClass(this.className);
+            this.borderGroup = null;
+            this.rectGroup = null;
+            this.pointGroup = null;
             this.setElement(this.svg.node);
             this.on({
 
@@ -201,6 +303,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
 
         events: {
             "dblclick": "showTextEdit",
+            "click": "selectedView",
         },
         showTextEdit: function(event) {
             var box = this.svg.rbox(),
@@ -216,10 +319,11 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             }, "triggerByTarget");
         },
         create: function(pos, type, text) {
-            var group = this.svg,
+            var group = this.svg.group("svg-rect-group"),
                 rect = null,
                 width = this.model.get("width") || this.defaultSize.width,
                 height = this.model.get("height") || this.defaultSize.height;
+            this.rectGroup = group;
             rect = group.rect(width, height);
             rect.attr({
                 x: pos.x - width / 2,
@@ -243,6 +347,8 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             var data = this.model.toJSON();
             this.svg.clear();
             this.create({ x: data.centerX, y: data.centerY }, data.value, data.text);
+            this.createConnectPoints(this.rectGroup);
+            this.createBorder(this.rectGroup);
             return this;
         },
     });
@@ -262,6 +368,10 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         },
         init: function() {
             this.svg = new SVG.G().addClass(this.className);
+            this.deviceGroup = null;
+            this.borderGroup = null;
+            this.pointGroup = null;
+
             this.setElement(this.svg.node);
 
             this.on({}, this);
@@ -272,6 +382,9 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
 
         events: {
             "dblclick": "showDeviceIdList",
+            "click": "selectedView",
+            "mouseenter": "hoverView",
+            "mousemove": "moveView"
         },
         updateDeviceId: function(model, newId) {
             var id = model.previous("deviceId");
@@ -292,7 +405,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             return "/imgs/" + type + ".svg";
         },
         create: function(pos, type, deviceName) {
-            var group = this.svg,
+            var group = this.svg.group("svg-device-group"),
                 img = null,
                 text = null,
                 box = null;
@@ -314,11 +427,15 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 x: pos.x - this.defaultSize.width / 2,
                 y: pos.y - this.defaultSize.height / 2
             });
+            this.deviceGroup = group;
+            this.createConnectPoints(group);
+            this.createBorder(group);
         },
         render: function() {
             var data = this.model.toJSON();
             this.svg.clear();
             this.create({ x: data.centerX, y: data.centerY }, data.value, data.deviceName);
+            console.log("render");
             return this;
         },
     });

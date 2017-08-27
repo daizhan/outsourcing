@@ -1,204 +1,206 @@
 define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common"], function($, _, Backbone, SVG, tpl, C) {
     var attrModel = Backbone.Model.extend({
-        defaults: {
-            undo: {
-                className: "undo",
-                value: "",
-                available: false,
-                text: "撤销",
-            },
-            redo: {
-                value: "",
-                className: "redo",
-                available: false,
-                text: "恢复",
-            },
-            formatBrush: {
-                className: "format-brush",
-                value: "",
-                available: false,
-                text: "格式刷",
-            },
-            scale: {
-                className: "scale",
-                value: 0,
-                default: 100,
-                available: true,
-                list: [
-                    200, 150, 125, 110, 100, 90, 75, 50, 25
-                ],
-                text: "缩放",
-            },
-            font: {
-                className: "font-family",
-                value: "",
-                default: "Microsoft Yahei",
-                list: [
-                    "Helvetica Neue",
-                    "Helvetica",
-                    "Arial",
-                    "PingFang SC",
-                    "Hiragino Sans GB",
-                    "WenQuanYi Micro Hei",
-                    "Microsoft Yahei",
-                    "sans-serif"
-                ],
-                available: false,
-                text: "字体",
-            },
-            fontSize: {
-                className: "font-size",
-                value: 0,
-                default: 14,
-                available: false,
-                text: "字体大小",
-                max: 72,
-                min: 10
-            },
-            textColor: {
-                className: "color",
-                value: "",
-                default: "333",
-                available: false,
-                text: "字体颜色",
-            },
-            textBold: {
-                className: "bold",
-                value: "",
-                available: false,
-                text: "加粗",
-            },
-            textItalic: {
-                className: "italic",
-                value: "",
-                available: false,
-                text: "斜体",
-            },
-            arrange: {
-                value: "",
-                list: [
-                    {value: "arrange-left", text: "左对齐"},
-                    {value: "arrange-right", text: "右对齐"},
-                    {value: "arrange-top", text: "顶对齐"},
-                    {value: "arrange-bottom", text: "底对齐"},
-                    {value: "arrange-center", text: "水平居中"},
-                    {value: "arrange-middle", text: "垂直居中"},
-                    {value: "arrange-center-middle", text: "水平垂直居中"},
-                    {value: "arrange-h", text: "水平分布"},
-                    {value: "arrange-v", text: "垂直分布"}
-                ],
-                className: "arrange-left",
-                default: "arrange-left",
-                available: false,
-                text: "对齐",
-            },
-            fillColor: {
-                className: "fill-color",
-                value: "",
-                default: "fff",
-                available: false,
-                text: "填充色",
-            },
-            borderColor: {
-                className: "stroke-color",
-                value: "",
-                default: "666",
-                available: false,
-                text: "边框色",
-            },
-            borderStyle: {
-                className: "border-style",
-                value: "",
-                default: "solid",
-                list: [
-                    { value: "solid", text: ""},
-                    { value: "dashed", text: ""},
-                    { value: "dot", text: ""}
-                ],
-                available: false,
-                text: "边框类型",
-            },
-            borderWidth: {
-                className: "border-width",
-                value: "",
-                list: [
-                    1, 2, 3, 4, 5, 6, 8, 10
-                ],
-                default: 1,
-                available: false,
-                text: "边框宽度",
-            },
-            startArrow: {
-                className: "line-start",
-                value: "",
-                list: [
-                    { value: "line-no-arrow", text: "直线"},
-                    { value: "line-with-arrow", text: "实心箭头"}
-                ],
-                default: "line-no-arrow",
-                available: false,
-                text: "起点类型",
-            },
-            endArrow: {
-                className: "line-end",
-                default: "line-with-arrow",
-                value: "",
-                list: [
-                    { value: "line-no-arrow", text: "直线"},
-                    { value: "line-with-arrow", text: "实心箭头"}
-                ],
-                available: false,
-                text: "终点类型",
-            },
-            moveUp: {
-                className: "move-up",
-                value: "",
-                available: false,
-                text: "上移一层",
-            },
-            moveDown: {
-                className: "move-down",
-                value: "",
-                available: false,
-                text: "下移一层",
-            },
-            copy: {
-                className: "copy",
-                value: "",
-                available: false,
-                text: "复制",
-            },
-            cut: {
-                className: "cut",
-                value: "",
-                available: false,
-                text: "剪切",
-            },
-            paste: {
-                className: "paste",
-                value: "",
-                available: false,
-                text: "粘贴",
-            },
-            delete: {
-                className: "delete",
-                value: "",
-                available: false,
-                text: "删除",
-            },
-            pos: {
-                className: "offset",
-                x: "",
-                y: "",
-                available: false,
-            },
-            size: {
-                className: "size",
-                h: "",
-                w: "",
-                available: false
-            },
-            viewId: 0,
+        defaults: function(){
+            return {
+                undo: {
+                    className: "undo",
+                    value: "",
+                    available: false,
+                    text: "撤销",
+                },
+                redo: {
+                    value: "",
+                    className: "redo",
+                    available: false,
+                    text: "恢复",
+                },
+                formatBrush: {
+                    className: "format-brush",
+                    value: "",
+                    available: false,
+                    text: "格式刷",
+                },
+                scale: {
+                    className: "scale",
+                    value: 0,
+                    default: 100,
+                    available: true,
+                    list: [
+                        200, 150, 125, 110, 100, 90, 75, 50, 25
+                    ],
+                    text: "缩放",
+                },
+                font: {
+                    className: "font-family",
+                    value: "",
+                    default: "Microsoft Yahei",
+                    list: [
+                        "Helvetica Neue",
+                        "Helvetica",
+                        "Arial",
+                        "PingFang SC",
+                        "Hiragino Sans GB",
+                        "WenQuanYi Micro Hei",
+                        "Microsoft Yahei",
+                        "sans-serif"
+                    ],
+                    available: false,
+                    text: "字体",
+                },
+                fontSize: {
+                    className: "font-size",
+                    value: 0,
+                    default: 14,
+                    available: false,
+                    text: "字体大小",
+                    max: 72,
+                    min: 10
+                },
+                textColor: {
+                    className: "color",
+                    value: "",
+                    default: "333",
+                    available: false,
+                    text: "字体颜色",
+                },
+                textBold: {
+                    className: "bold",
+                    value: "",
+                    available: false,
+                    text: "加粗",
+                },
+                textItalic: {
+                    className: "italic",
+                    value: "",
+                    available: false,
+                    text: "斜体",
+                },
+                arrange: {
+                    value: "",
+                    list: [
+                        {value: "arrange-left", text: "左对齐"},
+                        {value: "arrange-right", text: "右对齐"},
+                        {value: "arrange-top", text: "顶对齐"},
+                        {value: "arrange-bottom", text: "底对齐"},
+                        {value: "arrange-center", text: "水平居中"},
+                        {value: "arrange-middle", text: "垂直居中"},
+                        {value: "arrange-center-middle", text: "水平垂直居中"},
+                        {value: "arrange-h", text: "水平分布"},
+                        {value: "arrange-v", text: "垂直分布"}
+                    ],
+                    className: "arrange-left",
+                    default: "arrange-left",
+                    available: false,
+                    text: "对齐",
+                },
+                fillColor: {
+                    className: "fill-color",
+                    value: "",
+                    default: "fff",
+                    available: false,
+                    text: "填充色",
+                },
+                borderColor: {
+                    className: "stroke-color",
+                    value: "",
+                    default: "666",
+                    available: false,
+                    text: "边框色",
+                },
+                borderStyle: {
+                    className: "border-style",
+                    value: "",
+                    default: "solid",
+                    list: [
+                        { value: "solid", text: ""},
+                        { value: "dashed", text: ""},
+                        { value: "dot", text: ""}
+                    ],
+                    available: false,
+                    text: "边框类型",
+                },
+                borderWidth: {
+                    className: "border-width",
+                    value: "",
+                    list: [
+                        1, 2, 3, 4, 5, 6, 8, 10
+                    ],
+                    default: 1,
+                    available: false,
+                    text: "边框宽度",
+                },
+                startArrow: {
+                    className: "line-start",
+                    value: "",
+                    list: [
+                        { value: "line-no-arrow", text: "直线"},
+                        { value: "line-with-arrow", text: "实心箭头"}
+                    ],
+                    default: "line-no-arrow",
+                    available: false,
+                    text: "起点类型",
+                },
+                endArrow: {
+                    className: "line-end",
+                    default: "line-with-arrow",
+                    value: "",
+                    list: [
+                        { value: "line-no-arrow", text: "直线"},
+                        { value: "line-with-arrow", text: "实心箭头"}
+                    ],
+                    available: false,
+                    text: "终点类型",
+                },
+                moveUp: {
+                    className: "move-up",
+                    value: "",
+                    available: false,
+                    text: "上移一层",
+                },
+                moveDown: {
+                    className: "move-down",
+                    value: "",
+                    available: false,
+                    text: "下移一层",
+                },
+                copy: {
+                    className: "copy",
+                    value: "",
+                    available: false,
+                    text: "复制",
+                },
+                cut: {
+                    className: "cut",
+                    value: "",
+                    available: false,
+                    text: "剪切",
+                },
+                paste: {
+                    className: "paste",
+                    value: "",
+                    available: false,
+                    text: "粘贴",
+                },
+                delete: {
+                    className: "delete",
+                    value: "",
+                    available: false,
+                    text: "删除",
+                },
+                pos: {
+                    className: "offset",
+                    x: "",
+                    y: "",
+                    available: false,
+                },
+                size: {
+                    className: "size",
+                    h: "",
+                    w: "",
+                    available: false
+                },
+                viewId: 0,
+            };
         },
         sync: function(mothod, model, options) {
             model.set("id", model.cid);
@@ -246,11 +248,9 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
         className: "top-attrs",
         initialize: function() {
             var self = this;
-            this.on({
-                showTypeAttr: this.showTypeAttr
-            }, this);
 
             this.listenTo(this.model, "sync", this.render);
+            this.listenTo(Backbone, "showTypeAttr", this.showTypeAttr);
         },
         template: _.template(tpl),
         getAttrClassName: function(attr, attrData) {
@@ -321,6 +321,11 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
 
         // events
         showTypeAttr: function(options){
+            console.log(options);
+            if (typeof options == "undefined") {
+                this.model.save(this.model.defaults());
+                return;
+            }
             var self = this,
                 disabledAttr = this.svgElemDisabledAttrs[options.type],
                 modelData = this.model.toJSON();

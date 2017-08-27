@@ -1,5 +1,7 @@
 define(["jquery", "underscore", "backbone", "svg", "model"], function($, _, Backbone, SVG, Model) {
-    var Collection = Backbone.Collection.extend({});
+    var Collection = Backbone.Collection.extend({
+        initialize: function(){ },
+    });
 
     var LineCollection = Collection.extend({
         model: Model.line

@@ -623,6 +623,15 @@ textarea {
 text {
     font-family: inherit;
 }
+.svg-cursor-nesw {
+    cursor: nesw-resize;
+}
+.svg-cursor-nwse {
+    cursor: nwse-resize;
+}
+.dsn {
+    display: none;
+}
 
 
 /* end start */

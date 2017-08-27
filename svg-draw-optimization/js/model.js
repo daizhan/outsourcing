@@ -36,8 +36,10 @@ define(["jquery", "underscore", "backbone", "svg"], function($, _, Backbone, SVG
             }
         },
 
-        sync: function(mothod, model, options) {
-            model.set("id", model.cid);
+        sync: function(method, model, options) {
+            if (method != "DELETE") {
+                model.set("id", model.cid);
+            }
             options.success({});
         },
 
