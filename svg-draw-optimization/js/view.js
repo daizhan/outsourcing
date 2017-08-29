@@ -224,6 +224,32 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             Backbone.trigger("removeSelected", {viewId: this.id});
             Backbone.trigger("showTypeAttr", {type: type == "device" ? type : this.model.get("value")});
             this.setBorderGroupStatus(true);
+
+            this.lastPos = null;
+            this.canMove = false;
+        },
+        moveView: function(offset){
+            this.svg.transform(offset);
+        },
+        startMove: function(event){
+            this.lastPos = {
+                x: event.screenX,
+                y: event.screenY
+            };
+            this.canMove = true;
+        },
+        isMoving: function(event){
+            if (this.canMove && this.lastPos) {
+                var offset = {
+                    x: event.screenX - this.lastPos.x,
+                    y: event.screenY - this.lastPos.y
+                };
+                this.moveView(offset);
+            }
+        },
+        endMove: function(event){
+            this.lastPos = null;
+            this.canMove = false;
         },
     });
 
@@ -239,28 +265,143 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         },
         init: function() {
             this.svg = new SVG.G().addClass(this.className);
+            this.lineGroup = null;
+            this.borderGroup = null;
+            this.pointGroup = null;
             this.setElement(this.svg.node);
             this.on({
 
             }, this);
         },
 
-        events: {},
-
+        events: {
+            "click": "selectedView",
+            "mousedown": "startMove",
+            "mousemove": "isMoving",
+            "mouseup": "endMove",
+            "mouseleave": "endMove",
+        },
+        createBorder: function(isShow){
+            var points = this.getMovePoints();
+                corderWidth = 4,
+                group = this.svg.group().addClass("svg-group-border"),
+                centerPoints = [
+                    {cx: points.start.x, cy: points.start.y, width: corderWidth, height: corderWidth},
+                    {cx: points.end.x, cy: points.end.y, width: corderWidth, height: corderWidth},
+                ],
+                path = null;
+            if (points.mid){
+                centerPoints.push({cx: points.mid.x, cy: points.mid.y, width: corderWidth, height: corderWidth});
+            }
+            if (!isShow) {
+                group.addClass("dsn");
+            }
+            this.borderGroup = group;
+            for (var i = 0, len = centerPoints.length; i < len; i ++) {
+                box = centerPoints[i];
+                path = group.path(
+                    "M " + (box.cx - box.width/2) + " " + (box.cy - box.height/2) +
+                    "L " + (box.cx + box.width/2) + " " + (box.cy - box.height/2) +
+                    "L " + (box.cx + box.width/2) + " " + (box.cy + box.height/2) +
+                    "L " + (box.cx - box.width/2) + " " + (box.cy + box.height/2) +
+                    "Z"
+                );
+                path.stroke({ color: "#60f"})
+                    .fill("#fff")
+                    .addClass("svg-border-corner svg-cursor-nesw");
+                if (i == 0) {
+                    path.removeClass("svg-cursor-nesw").addClass("svg-cursor-nwse");
+                }
+                if (i == 2) {
+                    path.removeClass("svg-cursor-nesw").addClass("svg-cursor-ew");
+                }
+            }
+        },
+        getLineDefaultPoints: function(){
+            var modelData = this.model.toJSON();
+            return {
+                start: {
+                    x: parseInt(modelData.centerX - this.defaultSize.width / 2),
+                    y: parseInt(modelData.centerY)
+                }, 
+                end: {
+                    x: parseInt(modelData.centerX + this.defaultSize.width / 2),
+                    y: parseInt(modelData.centerY)
+                }
+            };
+        },
+        getPolylineDefaultPoints: function(){
+            var modelData = this.model.toJSON();
+            return {
+                start: {
+                    x: parseInt(modelData.centerX - this.defaultSize.width / 2),
+                    y: parseInt(modelData.centerY - this.defaultSize.height / 2)
+                },
+                point1: {
+                    x: parseInt(modelData.centerX),
+                    y: parseInt(modelData.centerY - this.defaultSize.height / 2)
+                },
+                point2: {
+                    x: parseInt(modelData.centerX),
+                    y: parseInt(modelData.centerY + this.defaultSize.height / 2)
+                },
+                end: {
+                    x: parseInt(modelData.centerX + this.defaultSize.width / 2),
+                    y: parseInt(modelData.centerY + this.defaultSize.height / 2)
+                }
+            };
+        },
+        getPoints: function(){
+            var modelData = this.model.toJSON();
+            if (modelData.points.length) {
+                return modelData.points;
+            }
+            if (modelData.value == "line") {
+                return this.getLineDefaultPoints();
+            } else {
+                return this.getPolylineDefaultPoints();
+            }
+        },
+        getEndPoints: function(){
+            var points = this.getPoints();
+            return {
+                start: points.start,
+                end: points.end
+            };
+        },
+        getMidPoints: function(){
+            var points = this.getPoints();
+            if (points.point1 || points.point2) {
+                return {
+                    point1: points.point1,
+                    point2: points.point2
+                };
+            }
+            return null;
+        },
+        getMovePoints: function(){
+            var modelData = this.model.toJSON();
+                points = this.getEndPoints();
+            if (modelData.value == "line") {
+                return points;
+            }
+            return _.extend({mid: {x: modelData.centerX, y: modelData.centerY}}, points);
+        },
         create: function(pos, type) {
-            var group = this.svg,
-                line = null;
-            if (type == "polyline") {
+            var group = this.svg.group().addClass("svg-line-group"),
+                line = null,
+                points = this.getPoints();
+            if (points.point1) {
                 line = group.path(
-                    "M " + (pos.x - this.defaultSize.width / 2) + " " + (pos.y - this.defaultSize.height / 2) +
-                    " L " + pos.x + " " + (pos.y - this.defaultSize.height / 2) + " " +
-                    " L " + pos.x + " " + (pos.y + this.defaultSize.height / 2) + " " +
-                    " L " + (pos.x + this.defaultSize.width / 2) + " " + (pos.y + this.defaultSize.height / 2)
+                    "M " + points.start.x + " " + points.start.y +
+                    " L " + points.point1.x + " " + points.point1.y +
+                    " L " + points.point2.x + " " + points.point2.y +
+                    " L " + points.end.x + " " + points.end.y
                 );
             } else {
                 line = group.path(
-                    "M " + (pos.x - this.defaultSize.width / 2) + " " + pos.y +
-                    " L " + (pos.x + this.defaultSize.width / 2) + " " + pos.y
+                    "M " + points.start.x + " " + points.start.y +
+                    " L " + points.end.x + " " + points.end.y
                 );
             }
             line.attr({
@@ -272,6 +413,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             var data = this.model.toJSON();
             this.svg.clear();
             this.create({ x: data.centerX, y: data.centerY }, data.value);
+            this.createBorder();
             return this;
         },
     });
@@ -304,6 +446,10 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         events: {
             "dblclick": "showTextEdit",
             "click": "selectedView",
+            "mousedown": "startMove",
+            "mousemove": "isMoving",
+            "mouseup": "endMove",
+            "mouseleave": "endMove",
         },
         showTextEdit: function(event) {
             var box = this.svg.rbox(),
@@ -319,7 +465,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             }, "triggerByTarget");
         },
         create: function(pos, type, text) {
-            var group = this.svg.group("svg-rect-group"),
+            var group = this.svg.group().addClass("svg-rect-group"),
                 rect = null,
                 width = this.model.get("width") || this.defaultSize.width,
                 height = this.model.get("height") || this.defaultSize.height;
@@ -383,8 +529,10 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         events: {
             "dblclick": "showDeviceIdList",
             "click": "selectedView",
-            "mouseenter": "hoverView",
-            "mousemove": "moveView"
+            "mousedown": "startMove",
+            "mousemove": "isMoving",
+            "mouseup": "endMove",
+            "mouseleave": "endMove",
         },
         updateDeviceId: function(model, newId) {
             var id = model.previous("deviceId");
@@ -405,7 +553,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             return "/imgs/" + type + ".svg";
         },
         create: function(pos, type, deviceName) {
-            var group = this.svg.group("svg-device-group"),
+            var group = this.svg.group().addClass("svg-device-group"),
                 img = null,
                 text = null,
                 box = null;

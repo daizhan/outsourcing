@@ -629,6 +629,12 @@ text {
 .svg-cursor-nwse {
     cursor: nwse-resize;
 }
+.svg-cursor-ew {
+    cursor: ew-resize;
+}
+.svg-rect-group, .svg-device-group, .svg-line-group {
+    cursor: move;
+}
 .dsn {
     display: none;
 }
