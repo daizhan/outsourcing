@@ -141,6 +141,54 @@ require(
                 this.setBodyEvents();
             },
 
+            getSelectedViewByTarget: function(event){
+                var className = "svg-view",
+                    $target = $(event.target),
+                    id = 0;
+                if ($target.hasClass(className)) {
+                    id = $target.attr("data-id");
+                } else if ($target.parents("." + className).length) {
+                    $target = $target.parents("." + className);
+                    id = $target.attr("data-id");
+                }
+                if (id) {
+                    return this.getSubView(id);
+                }
+                return null;
+            },
+
+            setMoveEvents: function(){
+                var self = this,
+                    selectedView = null,
+                    lastPos = null;
+                $(document).mousedown(function(event){
+                    selectedView = self.getSelectedViewByTarget(event);
+                    if (selectedView) {
+                        lastPos = {
+                            x: event.clientX,
+                            y: event.clientY
+                        };
+                    }
+                });
+                $(document).mousemove(function(event){
+                    if (selectedView && lastPos) {
+                        var offset = {
+                            x: event.clientX - lastPos.x,
+                            y: event.clientY - lastPos.y
+                        };
+                        lastPos = {
+                            x: event.clientX,
+                            y: event.clientY
+                        };
+                        selectedView.trigger("move", offset);
+                    }
+                });
+                $(document).click(function(event){
+                    lastPos = null;
+                    selectedView = null;
+                });
+            },
+
             setBodyEvents: function(){
                 var self = this;
                 $(document).click(function(event){
@@ -158,6 +206,8 @@ require(
                     Backbone.trigger("removeSelected", {});
                     Backbone.trigger("showTypeAttr");
                 });
+
+                this.setMoveEvents();
             },
             setOtherEvents: function() {
                 this.listenTo(Backbone, "setScale", this.scaleSvg);
@@ -334,6 +384,7 @@ require(
                 var id = view.id || C.utils.count();
                 this.subViews[id] = view;
                 view.id = id;
+                view.svg.addClass("svg-view").attr("data-id", id);
             },
             getSubView: function(key) {
                 var view = null;
@@ -364,6 +415,7 @@ require(
                     view = this.elemToBeAdd;
                 }
                 if (!options.isToBeAdd) {
+                    this.addSubView(view);
                     view.trigger("setSelected");
                 }
             },
@@ -376,6 +428,7 @@ require(
                     view = this.elemToBeAdd;
                 }
                 if (!options.isToBeAdd) {
+                    this.addSubView(view);
                     view.trigger("setSelected");
                 }
             }

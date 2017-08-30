@@ -229,28 +229,12 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             this.canMove = false;
         },
         moveView: function(offset){
-            this.svg.transform(offset);
-        },
-        startMove: function(event){
-            this.lastPos = {
-                x: event.screenX,
-                y: event.screenY
-            };
-            this.canMove = true;
-        },
-        isMoving: function(event){
-            if (this.canMove && this.lastPos) {
-                var offset = {
-                    x: event.screenX - this.lastPos.x,
-                    y: event.screenY - this.lastPos.y
-                };
-                this.moveView(offset);
-            }
-        },
-        endMove: function(event){
-            this.lastPos = null;
-            this.canMove = false;
-        },
+            var transform = this.svg.transform();
+            this.svg.transform({
+                x: transform.x+offset.x,
+                y: transform.y+offset.y
+            });
+        }
     });
 
     var LineView = View.extend({
@@ -270,16 +254,12 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             this.pointGroup = null;
             this.setElement(this.svg.node);
             this.on({
-
+                "move": this.moveView,
             }, this);
         },
 
         events: {
             "click": "selectedView",
-            "mousedown": "startMove",
-            "mousemove": "isMoving",
-            "mouseup": "endMove",
-            "mouseleave": "endMove",
         },
         createBorder: function(isShow){
             var points = this.getMovePoints();
@@ -439,17 +419,13 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             this.pointGroup = null;
             this.setElement(this.svg.node);
             this.on({
-
+                "move": this.moveView,
             }, this);
         },
 
         events: {
             "dblclick": "showTextEdit",
             "click": "selectedView",
-            "mousedown": "startMove",
-            "mousemove": "isMoving",
-            "mouseup": "endMove",
-            "mouseleave": "endMove",
         },
         showTextEdit: function(event) {
             var box = this.svg.rbox(),
@@ -520,7 +496,9 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
 
             this.setElement(this.svg.node);
 
-            this.on({}, this);
+            this.on({
+                "move": this.moveView,
+            }, this);
 
             this.listenTo(this.model, "change:deviceId", this.updateDeviceId);
             this.listenTo(Backbone, "setId", this.setDeviceId);
@@ -529,10 +507,6 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         events: {
             "dblclick": "showDeviceIdList",
             "click": "selectedView",
-            "mousedown": "startMove",
-            "mousemove": "isMoving",
-            "mouseup": "endMove",
-            "mouseleave": "endMove",
         },
         updateDeviceId: function(model, newId) {
             var id = model.previous("deviceId");
