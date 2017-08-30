@@ -238,7 +238,15 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         moveEnd: function(){
             var transform = this.svg.transform();
             this.model.set({ offset: transform });
-        }
+        },
+        resizeView: function(size){
+            this.model.set({
+                width: size.width,
+                height: size.height,
+                centerX: size.centerX,
+                centerY: size.centerY
+            });
+        },
     });
 
     var LineView = View.extend({
@@ -263,11 +271,20 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             this.on({
                 "move": this.moveView,
                 "moveEnd": this.moveEnd,
+                "resize": this.resizeView,
             }, this);
         },
 
         events: {
             "click": "selectedView",
+        },
+        resizeView: function(size){
+            this.model.set({
+                width: size.width,
+                height: size.height,
+                centerX: size.centerX,
+                centerY: size.centerY
+            });
         },
         createBorder: function(isShow){
             var points = this.getMovePoints();
@@ -305,37 +322,45 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 }
             }
         },
+        getSize: function(){
+            return {
+                width: this.model.get("width") || this.defaultSize.width,
+                height: this.model.get("height") || this.defaultSize.height
+            }
+        },
         getLineDefaultPoints: function(){
-            var modelData = this.model.toJSON();
+            var modelData = this.model.toJSON(),
+                size = this.getSize();
             return {
                 start: {
-                    x: parseInt(modelData.centerX - this.defaultSize.width / 2),
+                    x: parseInt(modelData.centerX - size.width / 2),
                     y: parseInt(modelData.centerY)
                 }, 
                 end: {
-                    x: parseInt(modelData.centerX + this.defaultSize.width / 2),
+                    x: parseInt(modelData.centerX + size.width / 2),
                     y: parseInt(modelData.centerY)
                 }
             };
         },
         getPolylineDefaultPoints: function(){
-            var modelData = this.model.toJSON();
+            var modelData = this.model.toJSON(),
+                size = this.getSize();
             return {
                 start: {
-                    x: parseInt(modelData.centerX - this.defaultSize.width / 2),
-                    y: parseInt(modelData.centerY - this.defaultSize.height / 2)
+                    x: parseInt(modelData.centerX - size.width / 2),
+                    y: parseInt(modelData.centerY - size.height / 2)
                 },
                 point1: {
                     x: parseInt(modelData.centerX),
-                    y: parseInt(modelData.centerY - this.defaultSize.height / 2)
+                    y: parseInt(modelData.centerY - size.height / 2)
                 },
                 point2: {
                     x: parseInt(modelData.centerX),
-                    y: parseInt(modelData.centerY + this.defaultSize.height / 2)
+                    y: parseInt(modelData.centerY + size.height / 2)
                 },
                 end: {
-                    x: parseInt(modelData.centerX + this.defaultSize.width / 2),
-                    y: parseInt(modelData.centerY + this.defaultSize.height / 2)
+                    x: parseInt(modelData.centerX + size.width / 2),
+                    y: parseInt(modelData.centerY + size.height / 2)
                 }
             };
         },
@@ -433,6 +458,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             this.on({
                 "move": this.moveView,
                 "moveEnd": this.moveEnd,
+                "resize": this.resizeView,
             }, this);
         },
 
@@ -515,6 +541,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             this.on({
                 "move": this.moveView,
                 "moveEnd": this.moveEnd,
+                "resize": this.resizeView,
             }, this);
 
             this.listenTo(this.model, "change:deviceId", this.updateDeviceId);
@@ -547,7 +574,9 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             var group = this.svg.group().addClass("svg-device-group"),
                 img = null,
                 text = null,
-                box = null;
+                box = null,
+                width = this.model.get("width") || this.defaultSize.width,
+                height = this.model.get("height") || this.defaultSize.height;
             deviceName = deviceName || "设置设备";
             text = group.text("" + deviceName)
                 .addClass("svg-device-id")
@@ -559,12 +588,12 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             box = text.rbox();
             text.attr({
                 x: pos.x - box.width / 2,
-                y: pos.y - this.defaultSize.height / 2 - box.height - this.iconPadding
+                y: pos.y - height / 2 - box.height - this.iconPadding
             });
-            img = group.image(this.getImgUrl(type), this.defaultSize.width, this.defaultSize.height)
+            img = group.image(this.getImgUrl(type), width, height)
                 .attr({
-                    x: pos.x - this.defaultSize.width / 2,
-                    y: pos.y - this.defaultSize.height / 2
+                    x: pos.x - width / 2,
+                    y: pos.y - height / 2
                 });
             this.deviceGroup = group;
         },

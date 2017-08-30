@@ -156,13 +156,23 @@ require(
                 }
                 return null;
             },
+            isMoveOperate: function(event){
+                var className = "svg-group-border",
+                    $target = $(event.target);
+                if ($target.hasClass(className) || $target.parents("." + className).length) {
+                    return false;
+                }
+                return true;
+            },
 
             setMoveEvents: function(){
                 var self = this,
                     selectedView = null,
                     lastPos = null;
                 $(document).mousedown(function(event){
-                    selectedView = self.getSelectedViewByTarget(event);
+                    if (self.isMoveOperate(event)) {
+                        selectedView = self.getSelectedViewByTarget(event);
+                    }
                     if (selectedView) {
                         lastPos = {
                             x: event.clientX,
@@ -192,6 +202,52 @@ require(
                 });
             },
 
+            setResizeEvents: function(){
+                var self = this,
+                    selectedView = null,
+                    lastPos = null,
+                    size = null,
+                    points = null;
+                $(document).mousedown(function(event){
+                    if (!self.isMoveOperate(event)) {
+                        selectedView = self.getSelectedViewByTarget(event);
+                        points = selectedView.model.get("points");
+                        size = {
+                            width: selectedView.model.get("width") || selectedView.defaultSize.width,
+                            height: selectedView.model.get("height") || selectedView.defaultSize.height,
+                            centerX: selectedView.model.get("centerX"),
+                            centerY: selectedView.model.get("centerY"),
+                        };
+                    }
+                    if (selectedView && size) {
+                        lastPos = {
+                            x: event.clientX,
+                            y: event.clientY
+                        };
+                    }
+                });
+                $(document).mousemove(function(event){
+                    if (selectedView && lastPos && size) {
+                        var type = selectedView.model.get("value");
+                        var offset = {
+                            width: size.width + event.clientX - lastPos.x,
+                            height: size.height + event.clientY - lastPos.y,
+                            centerX: size.centerX + (event.clientX - lastPos.x)/2,
+                            centerY: size.centerY + (event.clientY - lastPos.y)/2,
+                        };
+                        if (type == "line" || type == "polyline") {
+                            offset.points = points;
+                        }
+                        selectedView.trigger("resize", offset);
+                    }
+                });
+                $(document).mouseup(function(event){
+                    lastPos = null;
+                    selectedView = null;
+                    size = null;
+                });
+            },
+
             setBodyEvents: function(){
                 var self = this;
                 $(document).click(function(event){
@@ -211,6 +267,7 @@ require(
                 });
 
                 this.setMoveEvents();
+                this.setResizeEvents();
             },
             setOtherEvents: function() {
                 this.listenTo(Backbone, "setScale", this.scaleSvg);
