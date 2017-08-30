@@ -16,6 +16,7 @@ define(["jquery", "underscore", "backbone", "svg"], function($, _, Backbone, SVG
                 height: 0,
                 zIndex: 0,
                 points: [],
+                offset: null,
 
                 deviceId: "",
                 deviceName: "",

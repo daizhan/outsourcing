@@ -184,6 +184,9 @@ require(
                     }
                 });
                 $(document).click(function(event){
+                    if (selectedView && lastPos) {
+                        selectedView.trigger("moveEnd");
+                    }
                     lastPos = null;
                     selectedView = null;
                 });

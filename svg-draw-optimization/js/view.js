@@ -217,6 +217,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         removeSelected: function(options){
             if (!options.viewId || options.viewId != this.id) {
                 this.setBorderGroupStatus(false);
+                this.isSelected = false;
             }
         },
         selectedView: function(){
@@ -225,8 +226,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             Backbone.trigger("showTypeAttr", {type: type == "device" ? type : this.model.get("value")});
             this.setBorderGroupStatus(true);
 
-            this.lastPos = null;
-            this.canMove = false;
+            this.isSelected = true;
         },
         moveView: function(offset){
             var transform = this.svg.transform();
@@ -234,6 +234,10 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 x: transform.x+offset.x,
                 y: transform.y+offset.y
             });
+        },
+        moveEnd: function(){
+            var transform = this.svg.transform();
+            this.model.set({ offset: transform });
         }
     });
 
@@ -252,9 +256,13 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             this.lineGroup = null;
             this.borderGroup = null;
             this.pointGroup = null;
+
+            this.isSelected = false;
+
             this.setElement(this.svg.node);
             this.on({
                 "move": this.moveView,
+                "moveEnd": this.moveEnd,
             }, this);
         },
 
@@ -392,8 +400,11 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         render: function() {
             var data = this.model.toJSON();
             this.svg.clear();
+            if (data.offset) {
+                this.svg.transform(data.offset);
+            }
             this.create({ x: data.centerX, y: data.centerY }, data.value);
-            this.createBorder();
+            this.createBorder(this.isSelected);
             return this;
         },
     });
@@ -417,9 +428,11 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             this.borderGroup = null;
             this.rectGroup = null;
             this.pointGroup = null;
+            this.isSelected = false;
             this.setElement(this.svg.node);
             this.on({
                 "move": this.moveView,
+                "moveEnd": this.moveEnd,
             }, this);
         },
 
@@ -468,9 +481,12 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         render: function() {
             var data = this.model.toJSON();
             this.svg.clear();
+            if (data.offset) {
+                this.svg.transform(data.offset);
+            }
             this.create({ x: data.centerX, y: data.centerY }, data.value, data.text);
-            this.createConnectPoints(this.rectGroup);
-            this.createBorder(this.rectGroup);
+            this.createConnectPoints(this.rectGroup, this.isShowPoints);
+            this.createBorder(this.rectGroup, this.isSelected);
             return this;
         },
     });
@@ -493,11 +509,12 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             this.deviceGroup = null;
             this.borderGroup = null;
             this.pointGroup = null;
-
+            this.isSelected = false;
             this.setElement(this.svg.node);
 
             this.on({
                 "move": this.moveView,
+                "moveEnd": this.moveEnd,
             }, this);
 
             this.listenTo(this.model, "change:deviceId", this.updateDeviceId);
@@ -556,9 +573,12 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             if (this.deviceGroup) {
                 this.svg.clear();
             }
+            if (data.offset) {
+                this.svg.transform(data.offset);
+            }
             this.create({ x: data.centerX, y: data.centerY }, data.value, data.deviceName);
-            this.createConnectPoints(this.deviceGroup);
-            this.createBorder(this.deviceGroup);
+            this.createConnectPoints(this.deviceGroup, this.isShowPoints);
+            this.createBorder(this.deviceGroup, this.isSelected);
             return this;
         },
     });
