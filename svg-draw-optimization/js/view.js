@@ -163,7 +163,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 path.stroke({ color: "#60f"})
                     .fill("#fff");
                 if (i != 0) {
-                    path.addClass("svg-border-corner");
+                    path.addClass("svg-border-corner").attr("data-order", i);
                     if (i % 2 == 1) {
                         path.addClass("svg-border-corner svg-cursor-nwse");
                     } else {

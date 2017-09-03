@@ -257,11 +257,13 @@ require(
                     selectedView = null,
                     lastPos = null,
                     size = null,
-                    points = null;
+                    points = null,
+                    order = 0;
                 $(document).mousedown(function(event){
                     if (!self.isMoveOperate(event)) {
                         selectedView = self.getSelectedViewByTarget(event);
                         points = selectedView.model.get("points");
+                        order = event.target.getAttribute("data-order") || 0;
                         size = {
                             width: selectedView.model.get("width") || selectedView.defaultSize.width,
                             height: selectedView.model.get("height") || selectedView.defaultSize.height,
@@ -278,10 +280,11 @@ require(
                 });
                 $(document).mousemove(function(event){
                     if (selectedView && lastPos && size) {
-                        var type = selectedView.model.get("value");
+                        var type = selectedView.model.get("value"),
+                            scaleOffset = C.utils.getScaleOffset(parseInt(order), lastPos, { x: event.clientX, y: event.clientY });
                         var offset = {
-                            width: size.width + event.clientX - lastPos.x,
-                            height: size.height + event.clientY - lastPos.y,
+                            width: size.width + scaleOffset.x,
+                            height: size.height + scaleOffset.y,
                             centerX: size.centerX + (event.clientX - lastPos.x)/2,
                             centerY: size.centerY + (event.clientY - lastPos.y)/2,
                         };
@@ -294,6 +297,7 @@ require(
                 $(document).mouseup(function(event){
                     lastPos = null;
                     selectedView = null;
+                    order = 0;
                     size = null;
                 });
             },

@@ -64,12 +64,6 @@ define(["jquery"], function($) {
             return !this.isRectNotIntersect(rectA, rectB);
         },
         isRectNotIntersect: function(rectA, rectB) {
-            console.log(rectA);
-            console.log(rectB);
-            console.log((rectA[0].x > rectB[1].x));
-            console.log((rectA[0].y > rectB[1].y));
-            console.log((rectB[0].x > rectA[1].x));
-            console.log((rectB[0].y > rectA[1].y));
             if ((rectA[0].x > rectB[1].x) ||
                 (rectA[0].y > rectB[1].y) ||
                 (rectB[0].x > rectA[1].x) ||
@@ -77,6 +71,41 @@ define(["jquery"], function($) {
                 return true;
             }
             return false;
+        },
+        direction: {
+            rightUp: 1,
+            leftUp: 2,
+            leftDown: 3,
+            rightDown: 4
+        },
+        getPointDirection: function(pointA, pointB){
+            if (pointA.x > pointB.x && pointA.y >= pointB.y) {
+                return this.direction.rightDown;
+            }
+            if (pointA.x < pointB.x && pointA.y <= pointB.y) {
+                return this.direction.leftUp;
+            }
+            if (pointA.x >= pointB.x && pointA.y < pointB.y) {
+                return this.direction.rightUp;
+            }
+            if (pointA.x < pointB.x && pointA.y >= pointB.y) {
+                return this.direction.leftDown;
+            }
+        },
+        getScaleOffset: function(index, lastPos, currPos){
+            var offset = {
+                x: currPos.x - lastPos.x,
+                y: currPos.y - lastPos.y
+            }
+            if (index == 1) {
+                offset.x = -offset.x;
+                offset.y = -offset.y;
+            } else if (index == 2) {
+                offset.y = -offset.y;
+            } else if (index == 4) {
+                offset.x = -offset.x;
+            }
+            return offset;
         },
     }
 });
