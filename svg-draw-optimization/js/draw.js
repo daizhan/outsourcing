@@ -207,7 +207,7 @@ require(
                     isClickOnSvgView = false;
                     lastPos = null;
                 $(document).mousedown(function(event){
-                    if (self.isMoveOperate(event)) {
+                    if (event.button == 0 && self.isMoveOperate(event)) {
                         isClickOnSvgView = self.isClickOnSvgView(event);
                         lastPos = {
                             x: event.clientX,
@@ -260,7 +260,7 @@ require(
                     points = null,
                     order = 0;
                 $(document).mousedown(function(event){
-                    if (!self.isMoveOperate(event)) {
+                    if (event.button == 0 && !self.isMoveOperate(event)) {
                         selectedView = self.getSelectedViewByTarget(event);
                         points = selectedView.model.get("points");
                         order = event.target.getAttribute("data-order") || 0;
@@ -362,6 +362,9 @@ require(
                     isSelecting = false,
                     insideViews = [];
                 $(document).mousedown(function(event){
+                    if (event.button != 0) {
+                        return;
+                    }
                     var $target = $(event.target),
                         isClickOnAttrEle = self.isClickOnAttrEle(event),
                         selectedView = self.getSelectedViewByTarget(event);
