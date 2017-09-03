@@ -104,6 +104,7 @@ require(
 
                 this.svg = null;
                 this.bg = null;
+                this.selectTipsBox = null;
                 this.deviceView = null;
                 this.toolView = null;
                 this.attrView = null;
@@ -303,8 +304,29 @@ require(
                 }
                 this.updateAttrBySelectedView();
             },
+            getInsideView: function(area){
+                var views = [];
+                _.each(this.subViews, function(view){
+                    var box = view.svg.bbox(),
+                        rect = [
+                            {x: box.x, y: box.y},
+                            {x: box.x2, y: box.y2},
+                        ];
+                    if (view.type == "line") {
+                        if (C.utils.isRectContain(area, rect)) {
+                            views.push(view);
+                        }
+                    } else if (C.utils.isRectIntersect(area, rect)) {
+                        views.push(view);
+                    }
+                });
+                return views;
+            },
             setSelectEvents: function(){
-                var self = this;
+                var self = this,
+                    lastPos = null;
+                    isSelecting = false,
+                    insideViews = [];
                 $(document).mousedown(function(event){
                     var $target = $(event.target),
                         isClickOnAttrEle = self.isClickOnAttrEle(event),
@@ -314,9 +336,53 @@ require(
                             self.removeSelectedView();
                         }
                         self.attrView.trigger("showTypeAttr");
+                        if (self.isClickOnDraw(event)) {
+                            isSelecting = true;
+                            lastPos = {
+                                x: event.clientX,
+                                y: event.clientY
+                            };
+                        }
                     } else if (selectedView) {
                         self.selectView(selectedView, event.ctrlKey);
                     }
+                });
+                $(document).mousemove(function(event){
+                    if (isSelecting && lastPos) {
+                        if (!self.selectTipsBox) {
+                            self.selectTipsBox = self.svg.group().addClass("svg-select-tips");
+                        }
+                        var startPos = self.domToSvgPos(lastPos),
+                            endPos = self.domToSvgPos({
+                                x: event.clientX,
+                                y: event.clientY
+                            }),
+                            rectPoints = C.utils.getRectPoints(startPos, endPos);
+                        self.selectTipsBox.clear();
+                        self.selectTipsBox.rect(Math.abs(endPos.x - startPos.x), Math.abs(endPos.y-startPos.y))
+                            .attr({
+                                x: parseInt(rectPoints[0].x) + 0.5,
+                                y: parseInt(rectPoints[0].y) + 0.5
+                            })
+                            .fill("rgba(0, 0, 120, 0.05)")
+                            .stroke({ color: "rgba(0,0,120, 0.8)" });
+                        insideViews = self.getInsideView([rectPoints[0], rectPoints[2]]);
+                    }
+                });
+                $(document).mouseup(function(event){
+                    isSelecting = false;
+                    lastPos = null;
+                    if (self.selectTipsBox) {
+                        self.selectTipsBox.remove();
+                    }
+                    self.selectTipsBox = null;
+                    if (insideViews.length) {
+                        insideViews.forEach(function(view){
+                            self.selectedViews.push(view);
+                            view.trigger("setSelected");
+                        });
+                    }
+                    insideViews = [];
                 });
             },
 

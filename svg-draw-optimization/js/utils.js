@@ -26,5 +26,57 @@ define(["jquery"], function($) {
                 return count;
             };
         })(),
+
+        distance: function(pointA, pointB){},
+        // 根据对角线上点，计算矩形的四个点，按照顺时针顺序返回点集
+        getRectPoints: function(pointA, pointB){
+            var minX = Math.min(pointA.x, pointB.x),
+                minY = Math.min(pointA.y, pointB.y),
+                maxX = Math.max(pointA.x, pointB.x),
+                maxY = Math.max(pointA.y, pointB.y);
+            return [
+                {x: minX, y: minY},
+                {x: maxX, y: minY},
+                {x: maxX, y: maxY},
+                {x: minX, y: maxY}
+            ];
+        },
+        rectCoordCompare: function(rectA, rectB){
+            return {
+                upperX: rect
+            };
+        },
+        // is big contain small
+        isRectContain: function(bigRect, smallRect) {
+            if ((bigRect[0].x <= smallRect[0].x) &&
+                (bigRect[0].y <= smallRect[0].y) &&
+                (bigRect[1].x >= smallRect[1].x) &&
+                (bigRect[1].y >= smallRect[1].y)) {
+                return true;
+            }
+            return false;
+        },
+        isRectPureIntersect: function(rectA, rectB) {
+            var isContain = this.isRectContain(rectA, rectB) || this.isRectContain(rectB, rectA);
+            return !this.isRectNotIntersect(rectA, rectB) && !isContain;
+        },
+        isRectIntersect: function(rectA, rectB) {
+            return !this.isRectNotIntersect(rectA, rectB);
+        },
+        isRectNotIntersect: function(rectA, rectB) {
+            console.log(rectA);
+            console.log(rectB);
+            console.log((rectA[0].x > rectB[1].x));
+            console.log((rectA[0].y > rectB[1].y));
+            console.log((rectB[0].x > rectA[1].x));
+            console.log((rectB[0].y > rectA[1].y));
+            if ((rectA[0].x > rectB[1].x) ||
+                (rectA[0].y > rectB[1].y) ||
+                (rectB[0].x > rectA[1].x) ||
+                (rectB[0].y > rectA[1].y)) {
+                return true;
+            }
+            return false;
+        },
     }
 });
