@@ -1,37 +1,5 @@
 define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Backbone, SVG, C) {
-    var View = Backbone.View.extend({
-        initialize: function(data) {
-            this.baseSvg = data.svg;
-            this.svg = null;
-
-            this.listenTo(this.model, "change", this.render);
-            this.listenTo(this.model, "destroy", this.remove);
-            this.id = data.viewId || 0;
-
-            this.listenTo(Backbone, "setFont", this.setFont);
-            this.listenTo(Backbone, "setFontSize", this.setFontSize);
-            this.listenTo(Backbone, "setTextColor", this.setTextColor);
-
-            this.listenTo(Backbone, "setFillColor", this.setFillColor);
-
-            this.listenTo(Backbone, "setBorderColor", this.setBorderColor);
-            this.listenTo(Backbone, "setBorderWidth", this.setBorderWidth);
-            this.listenTo(Backbone, "setBorderStyle", this.setBorderStyle);
-
-            this.listenTo(Backbone, "setStartArrow", this.setLinePoint);
-            this.listenTo(Backbone, "setEndArrow", this.setLinePoint);
-
-            this.listenTo(Backbone, "setArrange", this.setArrange);
-
-            this.on({
-                "setSelected": this.selectedView
-            }, this);
-            this.listenTo(Backbone, "removeSelected", this.removeSelected);
-
-            this.init(data);
-        },
-        init: function() {},
-        create: function(pos, type, parent) {},
+    var BaseView = Backbone.View.extend({
         domToSvgPos: function(pos) {
             var svgDoc = this.getSvgRoot(),
                 $main = this.getMainContainerElem(),
@@ -61,6 +29,39 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 y: y
             });
         },
+    });
+    var View = BaseView.extend({
+        initialize: function(data) {
+            this.baseSvg = data.svg;
+            this.svg = null;
+
+            this.listenTo(this.model, "change", this.render);
+            this.listenTo(this.model, "destroy", this.remove);
+            this.id = data.viewId || 0;
+
+            this.listenTo(Backbone, "setFont", this.setFont);
+            this.listenTo(Backbone, "setFontSize", this.setFontSize);
+            this.listenTo(Backbone, "setTextColor", this.setTextColor);
+
+            this.listenTo(Backbone, "setFillColor", this.setFillColor);
+
+            this.listenTo(Backbone, "setBorderColor", this.setBorderColor);
+            this.listenTo(Backbone, "setBorderWidth", this.setBorderWidth);
+            this.listenTo(Backbone, "setBorderStyle", this.setBorderStyle);
+
+            this.listenTo(Backbone, "setStartArrow", this.setLinePoint);
+            this.listenTo(Backbone, "setEndArrow", this.setLinePoint);
+
+            this.listenTo(Backbone, "setArrange", this.setArrange);
+
+            this.on({
+                "setSelected": this.selectedView,
+                "removeSelected": this.removeSelected
+            }, this);
+
+            this.init(data);
+        },
+        init: function() {},
         setSvgText: function(text, svg) {
             var padding = {
                     top: 2,
@@ -214,18 +215,12 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 this.borderGroup.addClass("dsn");
             }
         },
-        removeSelected: function(options){
-            if (!options.viewId || options.viewId != this.id) {
-                this.setBorderGroupStatus(false);
-                this.isSelected = false;
-            }
+        removeSelected: function(){
+            this.setBorderGroupStatus(false);
+            this.isSelected = false;
         },
         selectedView: function(){
-            var type = this.model.get("type");
-            Backbone.trigger("removeSelected", {viewId: this.id});
-            Backbone.trigger("showTypeAttr", {type: type == "device" ? type : this.model.get("value")});
             this.setBorderGroupStatus(true);
-
             this.isSelected = true;
         },
         moveView: function(offset){
@@ -252,6 +247,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
     var LineView = View.extend({
         tagName: "g",
         className: "svg-line",
+        type: "line",
         defaultStyle: {
             strokeColor: "#333",
         },
@@ -276,7 +272,6 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         },
 
         events: {
-            "click": "selectedView",
         },
         resizeView: function(size){
             this.model.set({
@@ -403,21 +398,23 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         create: function(pos, type) {
             var group = this.svg.group().addClass("svg-line-group"),
                 line = null,
+                d = "",
                 points = this.getPoints();
             if (points.point1) {
-                line = group.path(
-                    "M " + points.start.x + " " + points.start.y +
+                d = "M " + points.start.x + " " + points.start.y +
                     " L " + points.point1.x + " " + points.point1.y +
                     " L " + points.point2.x + " " + points.point2.y +
-                    " L " + points.end.x + " " + points.end.y
-                );
+                    " L " + points.end.x + " " + points.end.y;
             } else {
-                line = group.path(
-                    "M " + points.start.x + " " + points.start.y +
-                    " L " + points.end.x + " " + points.end.y
-                );
+                d = "M " + points.start.x + " " + points.start.y +
+                    " L " + points.end.x + " " + points.end.y;
             }
-            line.attr({
+            group.path(d).attr({
+                stroke: "transparent",
+                "stroke-width": 5,
+                fill: "transparent"
+            });
+            group.path(d).attr({
                 stroke: this.defaultStyle.strokeColor,
                 fill: "transparent"
             });
@@ -437,6 +434,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
     var RectView = View.extend({
         tagName: "g",
         className: "svg-rect",
+        type: "rect",
         defaultStyle: {
             fill: "#fff",
             strokeColor: "#333",
@@ -464,7 +462,6 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
 
         events: {
             "dblclick": "showTextEdit",
-            "click": "selectedView",
         },
         showTextEdit: function(event) {
             var box = this.svg.rbox(),
@@ -520,6 +517,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
     var DeviceView = View.extend({
         tagName: "g",
         className: "svg-device",
+        type: "device",
         defaultStyle: {
             font: "Helvetica",
             fontSize: 12,
@@ -550,7 +548,6 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
 
         events: {
             "dblclick": "showDeviceIdList",
-            "click": "selectedView",
         },
         updateDeviceId: function(model, newId) {
             var id = model.previous("deviceId");
@@ -613,7 +610,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
     });
 
     return {
-        base: View,
+        base: BaseView,
         line: LineView,
         rect: RectView,
         device: DeviceView,

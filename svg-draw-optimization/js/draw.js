@@ -124,7 +124,7 @@ require(
                     value: "",
                 };
 
-                this.selectedItem = [];
+                this.selectedViews = [];
 
                 if (data.isEdit) {
                     this.$main.addClass("can-edit");
@@ -164,6 +164,29 @@ require(
                 }
                 return true;
             },
+            isClickOnEle: function(event, className){
+                var $target = $(event.target);
+                if ($target.hasClass(className) || $target.parents("." + className).length) {
+                    return true;
+                }
+                return false;
+            },
+            isClickOnAttrEle: function(event){
+                return this.isClickOnEle(event, "top-attrs");
+            },
+            isClickOnPopup: function(event){
+                return this.isClickOnEle(event, "common-popup-block");
+            },
+            isClickOnDraw: function(event){
+                return this.isClickOnEle(event, "draw-content");
+            },
+            isClickOnTool: function(event){
+                return this.isClickOnEle(event, "left-tools");
+            },
+            isClickOnDevice: function(event){
+                return this.isClickOnEle(event, "bottom-icons");
+            },
+            getClickAttr: function(event){},
 
             setMoveEvents: function(){
                 var self = this,
@@ -248,26 +271,189 @@ require(
                 });
             },
 
-            setBodyEvents: function(){
-                var self = this;
-                $(document).click(function(event){
-                    var $target = $(event.target),
-                        targetClasses = ["svg-line", "svg-rect", "svg-device", "top-attrs", "common-popup-block"];
-                    if (self.hasItemSelected) {
-                        self.hasItemSelected = false;
-                        return;
-                    }
-                    for (var i = 0, len = targetClasses.length; i < len; i ++) {
-                        if ($target.hasClass(targetClasses[i]) || $target.parents("." + targetClasses[i]).length) {
-                            return;
-                        }
-                    }
-                    Backbone.trigger("removeSelected", {});
-                    Backbone.trigger("showTypeAttr");
+            removeSelectedView: function() {
+                this.selectedViews.forEach(function(view){
+                    view.trigger("removeSelected");
                 });
+                this.selectedViews = [];
+            },
 
+            updateAttrBySelectedView: function(){
+                var types = [];
+                this.selectedViews.forEach(function(view){
+                    types.push(view.type);
+                });
+                this.attrView.trigger("showTypeAttr", {types: types});
+            },
+
+            selectView: function(view, isAppend){
+                if (!isAppend) {
+                    this.removeSelectedView();
+                    this.selectedViews.push(view);
+                    view.trigger("setSelected");
+                } else {
+                    var index = this.selectedViews.indexOf(view);
+                    if (!~index) {
+                        this.selectedViews.push(view);
+                        view.trigger("setSelected");
+                    } else {
+                        this.selectedViews.splice(index, 1);
+                        view.trigger("removeSelected");
+                    }
+                }
+                this.updateAttrBySelectedView();
+            },
+            setSelectEvents: function(){
+                var self = this;
+                $(document).mousedown(function(event){
+                    var $target = $(event.target),
+                        isClickOnAttrEle = self.isClickOnAttrEle(event),
+                        selectedView = self.getSelectedViewByTarget(event);
+                    if (!isClickOnAttrEle && !selectedView) {
+                        if (self.selectedViews.length) {
+                            self.removeSelectedView();
+                        }
+                        self.attrView.trigger("showTypeAttr");
+                    } else if (selectedView) {
+                        self.selectView(selectedView, event.ctrlKey);
+                    }
+                });
+            },
+
+            setSelectedItem: function(data) {
+                this.clearItemToBeAdd();
+                this.itemToBeAdd = _.extend({}, data);
+            },
+            clearItemToBeAdd: function(){
+                if (this.elemToBeAdd) {
+                    this.elemToBeAdd = null;
+                }
+            },
+            clearSelectedItem: function() {
+                this.itemToBeAdd = { type: "", value: "" };
+                this.clearItemToBeAdd();
+                this.toolView.trigger("selectDone");
+                this.deviceView.trigger("selectDone");
+            },
+            hover: function(event) {
+                if (this.itemToBeAdd.type && this.itemToBeAdd.value) {
+                    this.showItemToBeAdd(event);
+                } else {}
+            },
+            showItemToBeAdd: function(event) {
+                var pos = this.getMousePos(event),
+                    model = this.createItem(this.itemToBeAdd, pos);
+                this.createItemView(model, {isToBeAdd: true});
+            },
+            removeItemView: function(){
+                if (this.elemToBeAdd) {
+                    var collection = this.getTypeItem(this.elemToBeAdd.model.toJSON());
+                    collection.remove(this.elemToBeAdd.model);
+                    this.elemToBeAdd.model.destroy();
+                }
+            },
+            addItem: function(event) {
+                var pos = this.getMousePos(event),
+                    model = null;
+                if (this.itemToBeAdd.type && this.itemToBeAdd.value) {
+                    if (!this.isClickOnDraw(event)) {
+                        this.removeItemView();
+                    } else {
+                        model = this.createItem(this.itemToBeAdd, pos);
+                        this.createItemView(model, {isToBeAdd: false});
+                    }
+                    this.clearSelectedItem();
+                }
+            },
+            getTypeItem: function(data) {
+                if (data.value == "rect" || data.value == "round-rect") {
+                    return this.rectCollections;
+                } else if (data.value == "line" || data.value == "polyline") {
+                    return this.lineCollections;
+                } else if (data.value) {
+                    return this.deviceCollections;
+                }
+                return null;
+            },
+            createItem: function(item, pos) {
+                var collection = this.getTypeItem(item),
+                    model = null,
+                    view = null;
+                if (!this.elemToBeAdd) {
+                    model = collection.create({
+                        centerX: pos.x,
+                        centerY: pos.y,
+                        type: item.type,
+                        value: item.value
+                    });
+                } else {
+                    model = this.elemToBeAdd.model.set({
+                        centerX: pos.x,
+                        centerY: pos.y
+                    });
+                }
+                return model;
+            },
+            createItemView: function(model, options) {
+                var data = model.toJSON(),
+                    type = "";
+                if (data.type == "device") {
+                    type = data.type;
+                } else if (data.value == "line" || data.value == "polyline") {
+                    type = "line";
+                } else if (data.value) {
+                    type = "rect";
+                }
+                return this.addItemView(type, model, options);
+            },
+            addSubView: function(view) {
+                var id = view.id || C.utils.count();
+                this.subViews[id] = view;
+                view.id = id;
+                view.svg.addClass("svg-view").attr("data-id", id);
+            },
+            getSubView: function(key) {
+                var view = null;
+                if (this.subViews.hasOwnProperty(key)) {
+                    view = this.subViews[key];
+                }
+                return view;
+            },
+            addItemView: function(type, model, options) {
+                var view = null;
+                if (!this.elemToBeAdd) {
+                    this.elemToBeAdd = view = new View[type]({ model: model, viewId: C.utils.count() });
+                    this.svg.add(view.render().svg);
+                } else {
+                    view = this.elemToBeAdd;
+                }
+                if (!options.isToBeAdd) {
+                    this.addSubView(view);
+                    this.selectView(view);
+                }
+            },
+            setAddViewEvents: function(){
+                var self = this;
+                $(document).mousedown(function(event){
+                    if (self.isClickOnDevice(event)) {
+                        self.deviceView.trigger("setSelected", {event: event});
+                    } else if (self.isClickOnTool(event)) {
+                        self.toolView.trigger("setSelected", {event: event});
+                    }
+                });
+                $(document).mousemove(function(event){
+                    self.hover(event);
+                });
+                $(document).mouseup(function(event){
+                    self.addItem(event);
+                });
+            },
+
+            setBodyEvents: function(){
+                this.setAddViewEvents();
                 this.setMoveEvents();
                 this.setResizeEvents();
+                this.setSelectEvents();
             },
             setOtherEvents: function() {
                 this.listenTo(Backbone, "setScale", this.scaleSvg);
@@ -276,10 +462,6 @@ require(
                 C.layer.topNotify("info", {content: "scale page " + options.value + "%", shade: false, time: 2});
             },
 
-            events: {
-                "mousemove svg": "hover",
-                "mouseup svg, click svg": "addItem",
-            },
             renderGrid: function() {
                 var gap = 12,
                     box = this.svg.rbox(),
@@ -345,7 +527,6 @@ require(
                 $(".draw-content").css("margin-bottom", deviceHeight + "px");
 
                 this.listenTo(this.deviceView, "selectDevice", this.setSelectedItem);
-                this.listenTo(this.deviceView, "cancelDevice", this.clearSelectedItem);
             },
 
             initTool: function(tools) {
@@ -353,145 +534,7 @@ require(
                 this.$main.find(".top-attrs").after(this.toolView.render().el);
 
                 this.listenTo(this.toolView, "selectTool", this.setSelectedItem);
-                this.listenTo(this.toolView, "cancelTool", this.clearSelectedItem);
             },
-
-            // events and methods
-            setSelectedItem: function(data) {
-                this.clearItemToBeAdd();
-                this.itemToBeAdd = _.extend({}, data);
-            },
-            clearItemToBeAdd: function() {
-                if (this.elemToBeAdd) {
-                    this.elemToBeAdd = null;
-                }
-            },
-            clearSelectedItem: function() {
-                this.itemToBeAdd = { type: "", value: "" };
-                this.clearItemToBeAdd();
-            },
-            hover: function(event) {
-                if (this.itemToBeAdd.type && this.itemToBeAdd.value) {
-                    this.showItemToBeAdd(event);
-                } else {}
-            },
-            showItemToBeAdd: function(event) {
-                var pos = this.getMousePos(event),
-                    model = this.createItem(this.itemToBeAdd, pos);
-                this.createItemView(model, {isToBeAdd: true});
-            },
-            notifyAddDone: function(type) {
-                if (type == this.toolView.type) {
-                    this.toolView.trigger("selectDone");
-                } else if (type == this.deviceView.type) {
-                    this.deviceView.trigger("selectDone");
-                }
-            },
-            addItem: function(event) {
-                var pos = this.getMousePos(event),
-                    model = null;
-                if (this.itemToBeAdd.type && this.itemToBeAdd.value) {
-                    model = this.createItem(this.itemToBeAdd, pos);
-                    this.createItemView(model, {isToBeAdd: false});
-                    this.notifyAddDone(this.itemToBeAdd.type);
-                    this.clearSelectedItem();
-                    if (event.type != "click") {
-                        this.hasItemSelected = true;
-                    }
-                }
-            },
-            getTypeItem: function(data) {
-                if (data.value == "rect" || data.value == "round-rect") {
-                    return this.rectCollections;
-                } else if (data.value == "line" || data.value == "polyline") {
-                    return this.lineCollections;
-                } else if (data.value) {
-                    return this.deviceCollections;
-                }
-                return null;
-            },
-            createItem: function(item, pos) {
-                var collection = this.getTypeItem(item),
-                    model = null,
-                    view = null;
-                if (!this.elemToBeAdd) {
-                    model = collection.create({
-                        centerX: pos.x,
-                        centerY: pos.y,
-                        type: item.type,
-                        value: item.value
-                    });
-                } else {
-                    model = this.elemToBeAdd.model.set({
-                        centerX: pos.x,
-                        centerY: pos.y
-                    });
-                }
-                return model;
-            },
-            createItemView: function(model, options) {
-                var data = model.toJSON();
-                if (data.type == "device") {
-                    return this.addDevice(model, options);
-                } else if (data.value == "line" || data.value == "polyline") {
-                    return this.addLine(model, options);
-                } else if (data.value) {
-                    return this.addRect(model, options);
-                }
-                return null;
-            },
-            addSubView: function(view) {
-                var id = view.id || C.utils.count();
-                this.subViews[id] = view;
-                view.id = id;
-                view.svg.addClass("svg-view").attr("data-id", id);
-            },
-            getSubView: function(key) {
-                var view = null;
-                if (this.subViews.hasOwnProperty(key)) {
-                    view = this.subViews[key];
-                }
-                return view;
-            },
-            addDevice: function(device, options) {
-                var view = null;
-                if (!this.elemToBeAdd) {
-                    this.elemToBeAdd = view = new View.device({ model: device, viewId: C.utils.count() });
-                    this.svg.add(view.render().svg);
-                } else {
-                    view = this.elemToBeAdd;
-                }
-                if (!options.isToBeAdd) {
-                    this.addSubView(view);
-                    view.trigger("setSelected");
-                }
-            },
-            addLine: function(line, options) {
-                var view = null;
-                if (!this.elemToBeAdd) {
-                    this.elemToBeAdd = view = new View.line({ model: line, viewId: C.utils.count() });
-                    this.svg.add(view.render().svg);
-                } else {
-                    view = this.elemToBeAdd;
-                }
-                if (!options.isToBeAdd) {
-                    this.addSubView(view);
-                    view.trigger("setSelected");
-                }
-            },
-            addRect: function(rect, options) {
-                var view = null;
-                if (!this.elemToBeAdd) {
-                    this.elemToBeAdd = view = new View.rect({ model: rect, viewId: C.utils.count() });
-                    this.svg.add(view.render().svg);
-                } else {
-                    view = this.elemToBeAdd;
-                }
-                if (!options.isToBeAdd) {
-                    this.addSubView(view);
-                    view.trigger("setSelected");
-                }
-            }
         });
         var app = null;
 

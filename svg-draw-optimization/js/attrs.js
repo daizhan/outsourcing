@@ -250,7 +250,9 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
             var self = this;
 
             this.listenTo(this.model, "sync", this.render);
-            this.listenTo(Backbone, "showTypeAttr", this.showTypeAttr);
+            this.on({
+                "showTypeAttr": this.showTypeAttr
+            }, this);
         },
         template: _.template(tpl),
         getAttrClassName: function(attr, attrData) {
@@ -321,16 +323,23 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
 
         // events
         showTypeAttr: function(options){
-            if (typeof options == "undefined") {
+            var self = this;
+            options = options || {};
+            if (!Array.isArray(options.types) || !options.types.length) {
                 this.model.save(this.model.defaults());
                 return;
             }
             var self = this,
-                disabledAttr = this.svgElemDisabledAttrs[options.type],
+                disabledAttr = [],
                 modelData = this.model.toJSON();
-            if (!disabledAttr) {
-                disabledAttr = [];
-            }
+            options.types.forEach(function(type, index){
+                var attrs = self.svgElemDisabledAttrs[type] || [];
+                if (index != 0) {
+                    disabledAttr = _.intersection(disabledAttr, attrs);
+                } else {
+                    disabledAttr = attrs;
+                }
+            });
             _.each(modelData, function(attr, key){
                 if (disabledAttr.indexOf(key) != -1) {
                     attr.available = false;

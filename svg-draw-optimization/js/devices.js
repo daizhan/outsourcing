@@ -13,42 +13,36 @@ define(["jquery", "underscore", "backbone", "svg", "templates/device-tpl", "comm
             var self = this;
             this.model.set({ devices: data.devices });
             this.on({
-                "selectDone": this.clearItemSelected
+                "selectDone": this.clearItemSelected,
+                "setSelected": this.selectDevice
             }, this);
-            $(document).on("click", function(event) {
-                self.bindBodyClickEvent(event);
-            });
 
             this.listenTo(Backbone, "showDeviceIdList", this.showDeviceIdList);
             this.listenTo(Backbone, "updateDeviceIdStatus", this.updateDeviceIdStatus);
-
         },
         template: _.template(tpl),
         render: function() {
             this.$el.html(this.template(this.model.toJSON()));
             return this;
         },
-        events: {
-            "mousedown li": "selectDevice",
-        },
-
         // events
-        selectDevice: function(event) {
-            var $target = $(event.currentTarget),
-                type = $target.attr("data-type");
-            this.preventBodyClear = true;
+        selectDevice: function(options) {
+            var $target = $(options.event.target),
+                type = "";
+            if ($target.parents("li").length) {
+                $target = $target.parents("li");
+            } else if ($target[0].tagName == "li"){
+                // just the device
+            } else { // not click on device
+                return ;
+            }
+            type = $target.attr("data-type");
             if ($target.hasClass("selected")) {
                 return;
             }
             this.clearItemSelected();
             $target.addClass("selected");
             this.trigger("selectDevice", { type: this.type, value: type });
-        },
-        cancelSelect: function(isNotify) {
-            if (this.getSelected().length && (typeof isNotify == "undefined" || isNotify)) {
-                this.trigger("cancelDevice", { type: "", value: "" });
-            }
-            this.clearItemSelected();
         },
         clearItemSelected: function() {
             var $target = this.$el.find("li");
@@ -57,13 +51,6 @@ define(["jquery", "underscore", "backbone", "svg", "templates/device-tpl", "comm
         getSelected: function() {
             return this.$el.find("li.selected");
         },
-        bindBodyClickEvent: function(event) {
-            if (!this.preventBodyClear) {
-                this.cancelSelect()
-            }
-            this.preventBodyClear = false;
-        },
-
         getAvailableList: function(type) {
             var devices = this.model.get("devices"),
                 idList = [],
