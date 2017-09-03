@@ -684,7 +684,7 @@ require(
                 devices: [{
                         type: 2,
                         name: "接地设备",
-                        src: "/imgs/2.svg",
+                        src: "./imgs/2.svg",
                         devices: [{
                                 id: 1,
                                 name: "jack-1jack-1jack-1",
@@ -705,17 +705,17 @@ require(
                     {
                         type: 3,
                         name: "接地设备",
-                        src: "/imgs/3.svg"
+                        src: "./imgs/3.svg"
                     },
                     {
                         type: 4,
                         name: "接地设备",
-                        src: "/imgs/4.svg"
+                        src: "./imgs/4.svg"
                     },
                     {
                         type: 5,
                         name: "接地设备",
-                        src: "/imgs/5.svg"
+                        src: "./imgs/5.svg"
                     }
                 ]
             },
