@@ -172,6 +172,9 @@ require(
                 }
                 return false;
             },
+            isClickOnSvgView: function(event){
+                return this.isClickOnEle(event, "svg-view");
+            },
             isClickOnAttrEle: function(event){
                 return this.isClickOnEle(event, "top-attrs");
             },
@@ -189,15 +192,23 @@ require(
             },
             getClickAttr: function(event){},
 
+            moveView: function(offset){
+                this.selectedViews.forEach(function(view){
+                    view.trigger("move", offset);
+                });
+            },
+            endMoveView: function(){
+                this.selectedViews.forEach(function(view){
+                    view.trigger("moveEnd");
+                });
+            },
             setMoveEvents: function(){
                 var self = this,
-                    selectedView = null,
+                    isClickOnSvgView = false;
                     lastPos = null;
                 $(document).mousedown(function(event){
                     if (self.isMoveOperate(event)) {
-                        selectedView = self.getSelectedViewByTarget(event);
-                    }
-                    if (selectedView) {
+                        isClickOnSvgView = self.isClickOnSvgView(event);
                         lastPos = {
                             x: event.clientX,
                             y: event.clientY
@@ -205,7 +216,7 @@ require(
                     }
                 });
                 $(document).mousemove(function(event){
-                    if (selectedView && lastPos) {
+                    if (lastPos && isClickOnSvgView) {
                         var offset = {
                             x: event.clientX - lastPos.x,
                             y: event.clientY - lastPos.y
@@ -214,15 +225,30 @@ require(
                             x: event.clientX,
                             y: event.clientY
                         };
-                        selectedView.trigger("move", offset);
+                        self.moveView(offset);
                     }
                 });
                 $(document).click(function(event){
-                    if (selectedView && lastPos) {
-                        selectedView.trigger("moveEnd");
+                    if (lastPos && isClickOnSvgView) {
+                        self.endMoveView();
                     }
                     lastPos = null;
-                    selectedView = null;
+                    isClickOnSvgView = false;
+                });
+                $(document).keydown(function(event){
+                    var key = event.key || event.keyCode,
+                        offset = {x: 0, y: 0};
+                    if (key == "ArrowUp" || key == 38) {
+                        offset.y -= 1;
+                    } else if (key == "ArrowDown" || key == 40) { // down
+                        offset.y += 1;
+                    } else if (key == "ArrowLeft" || key == 37) { // left
+                        offset.x -= 1;
+                    } else if (key == "ArrowRight" || key == 39) { // right
+                        offset.x += 1;
+                    }
+                    self.moveView(offset);
+                    self.endMoveView();
                 });
             },
 
@@ -289,6 +315,10 @@ require(
 
             selectView: function(view, isAppend){
                 if (!isAppend) {
+                    var index = this.selectedViews.indexOf(view);
+                    if (!!~index) {
+                        return;
+                    }
                     this.removeSelectedView();
                     this.selectedViews.push(view);
                     view.trigger("setSelected");
