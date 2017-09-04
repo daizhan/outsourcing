@@ -496,10 +496,24 @@ require(
                         value: item.value
                     });
                 } else {
-                    model = this.elemToBeAdd.model.set({
-                        centerX: pos.x,
-                        centerY: pos.y
-                    });
+                    if (this.elemToBeAdd.type != "line") {
+                        model = this.elemToBeAdd.model.set({
+                            centerX: pos.x,
+                            centerY: pos.y
+                        });
+                    } else {
+                        var modelData = this.elemToBeAdd.model.toJSON(),
+                            offset = {
+                                x: pos.x - modelData.centerX,
+                                y: pos.y - modelData.centerY
+                            },
+                            points = C.utils.updatePoints(this.elemToBeAdd.getPoints(), offset);
+                        model = this.elemToBeAdd.model.set({
+                            centerX: pos.x,
+                            centerY: pos.y,
+                            points: points
+                        });
+                    }
                 }
                 return model;
             },

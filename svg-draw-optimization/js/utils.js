@@ -123,5 +123,19 @@ define(["jquery"], function($) {
                 cy: cy
             };
         },
+        updatePoints: function(points, offset) {
+            points.forEach(function(point) {
+                point.x += offset.x;
+                point.y += offset.y;
+            });
+            return points;
+        },
+        parsePointInt: function(points) {
+            points.forEach(function(point) {
+                point.x = parseInt(point.x);
+                point.y = parseInt(point.y);
+            });
+            return points;
+        },
     }
 });

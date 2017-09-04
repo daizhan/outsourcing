@@ -269,16 +269,6 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 "moveEnd": this.moveEnd,
                 "resize": this.resizeView,
             }, this);
-            var points = this.getPoints(),
-                rect = C.utils.getPointsRectInfo(points);
-            console.log(rect);
-            this.model.set({
-                points: points,
-                width: rect.width,
-                height: rect.height || 1,
-                centerX: rect.cx,
-                centerY: rect.cy
-            });
         },
 
         events: {},
@@ -292,7 +282,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 height: rect.height,
                 centerX: rect.cx,
                 centerY: rect.cy,
-                points: points
+                points: options.points
             });
         },
         createBorder: function(isShow) {
@@ -342,12 +332,12 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             var modelData = this.model.toJSON(),
                 size = this.getSize();
             return [{
-                    x: parseInt(modelData.centerX - size.width / 2),
-                    y: parseInt(modelData.centerY)
+                    x: modelData.centerX - size.width / 2,
+                    y: modelData.centerY
                 },
                 {
-                    x: parseInt(modelData.centerX + size.width / 2),
-                    y: parseInt(modelData.centerY)
+                    x: modelData.centerX + size.width / 2,
+                    y: modelData.centerY
                 }
             ];
         },
@@ -355,26 +345,26 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             var modelData = this.model.toJSON(),
                 size = this.getSize();
             return [{
-                    x: parseInt(modelData.centerX - size.width / 2),
-                    y: parseInt(modelData.centerY - size.height / 2)
+                    x: modelData.centerX - size.width / 2,
+                    y: modelData.centerY - size.height / 2
                 },
                 {
-                    x: parseInt(modelData.centerX),
-                    y: parseInt(modelData.centerY - size.height / 2)
+                    x: modelData.centerX,
+                    y: modelData.centerY - size.height / 2
                 },
                 {
-                    x: parseInt(modelData.centerX),
-                    y: parseInt(modelData.centerY + size.height / 2)
+                    x: modelData.centerX,
+                    y: modelData.centerY + size.height / 2
                 },
                 {
-                    x: parseInt(modelData.centerX + size.width / 2),
-                    y: parseInt(modelData.centerY + size.height / 2)
+                    x: modelData.centerX + size.width / 2,
+                    y: modelData.centerY + size.height / 2
                 }
             ];
         },
-        getPoints: function() {
+        getPoints: function(refresh) {
             var modelData = this.model.toJSON();
-            if (modelData.points.length) {
+            if (!refresh && modelData.points.length) {
                 return modelData.points;
             }
             if (modelData.value == "line") {
@@ -412,7 +402,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             var group = this.svg.group().addClass("svg-line-group"),
                 line = null,
                 d = "",
-                points = this.getPoints();
+                points = C.utils.parsePointInt(this.getPoints());
             if (points.length > 2) {
                 d = "M " + points[0].x + " " + points[0].y +
                     " L " + points[1].x + " " + points[1].y +
