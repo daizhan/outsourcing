@@ -27,21 +27,23 @@ define(["jquery"], function($) {
             };
         })(),
 
-        distance: function(pointA, pointB){},
-        // 根据对角线上点，计算矩形的四个点，按照顺时针顺序返回点集
-        getRectPoints: function(pointA, pointB){
-            var minX = Math.min(pointA.x, pointB.x),
-                minY = Math.min(pointA.y, pointB.y),
-                maxX = Math.max(pointA.x, pointB.x),
-                maxY = Math.max(pointA.y, pointB.y);
+        distance: function(pointA, pointB) {},
+        // 根据给定点，计算最小包含矩形的四个点，按照顺时针顺序返回点集
+        getRectPoints: function(points) {
+            var xValues = points.map(function(item) { return item.x; }),
+                yValues = points.map(function(item) { return item.x; }),
+                minX = Math.min.apply(Math, xValues),
+                minY = Math.min.apply(Math, yValues),
+                maxX = Math.max.apply(Math, xValues),
+                maxY = Math.max.apply(Math, yValues);
             return [
-                {x: minX, y: minY},
-                {x: maxX, y: minY},
-                {x: maxX, y: maxY},
-                {x: minX, y: maxY}
+                { x: minX, y: minY },
+                { x: maxX, y: minY },
+                { x: maxX, y: maxY },
+                { x: minX, y: maxY }
             ];
         },
-        rectCoordCompare: function(rectA, rectB){
+        rectCoordCompare: function(rectA, rectB) {
             return {
                 upperX: rect
             };
@@ -78,7 +80,7 @@ define(["jquery"], function($) {
             leftDown: 3,
             rightDown: 4
         },
-        getPointDirection: function(pointA, pointB){
+        getPointDirection: function(pointA, pointB) {
             if (pointA.x > pointB.x && pointA.y >= pointB.y) {
                 return this.direction.rightDown;
             }
@@ -92,7 +94,7 @@ define(["jquery"], function($) {
                 return this.direction.leftDown;
             }
         },
-        getScaleOffset: function(index, lastPos, currPos){
+        getScaleOffset: function(index, lastPos, currPos) {
             var offset = {
                 x: currPos.x - lastPos.x,
                 y: currPos.y - lastPos.y
@@ -106,6 +108,20 @@ define(["jquery"], function($) {
                 offset.x = -offset.x;
             }
             return offset;
+        },
+        getPointsRectInfo: function(points) {
+            var rect = this.getRectPoints(points),
+                width = rect[2].x - rect[0].x,
+                height = rect[2].y - rect[0].y,
+                cx = (rect[0].x + rect[2].x) / 2,
+                cy = (rect[0].y + rect[2].y) / 2;
+            return {
+                points: rect,
+                height: height,
+                width: width,
+                cx: cx,
+                cy: cy
+            };
         },
     }
 });

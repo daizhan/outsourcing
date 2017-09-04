@@ -142,7 +142,7 @@ require(
                 this.setBodyEvents();
             },
 
-            getSelectedViewByTarget: function(event){
+            getSelectedViewByTarget: function(event) {
                 var className = "svg-view",
                     $target = $(event.target),
                     id = 0;
@@ -157,7 +157,7 @@ require(
                 }
                 return null;
             },
-            isMoveOperate: function(event){
+            isMoveOperate: function(event) {
                 var className = "svg-group-border",
                     $target = $(event.target);
                 if ($target.hasClass(className) || $target.parents("." + className).length) {
@@ -165,48 +165,48 @@ require(
                 }
                 return true;
             },
-            isClickOnEle: function(event, className){
+            isClickOnEle: function(event, className) {
                 var $target = $(event.target);
                 if ($target.hasClass(className) || $target.parents("." + className).length) {
                     return true;
                 }
                 return false;
             },
-            isClickOnSvgView: function(event){
+            isClickOnSvgView: function(event) {
                 return this.isClickOnEle(event, "svg-view");
             },
-            isClickOnAttrEle: function(event){
+            isClickOnAttrEle: function(event) {
                 return this.isClickOnEle(event, "top-attrs");
             },
-            isClickOnPopup: function(event){
+            isClickOnPopup: function(event) {
                 return this.isClickOnEle(event, "common-popup-block");
             },
-            isClickOnDraw: function(event){
+            isClickOnDraw: function(event) {
                 return this.isClickOnEle(event, "draw-content");
             },
-            isClickOnTool: function(event){
+            isClickOnTool: function(event) {
                 return this.isClickOnEle(event, "left-tools");
             },
-            isClickOnDevice: function(event){
+            isClickOnDevice: function(event) {
                 return this.isClickOnEle(event, "bottom-icons");
             },
-            getClickAttr: function(event){},
+            getClickAttr: function(event) {},
 
-            moveView: function(offset){
-                this.selectedViews.forEach(function(view){
+            moveView: function(offset) {
+                this.selectedViews.forEach(function(view) {
                     view.trigger("move", offset);
                 });
             },
-            endMoveView: function(){
-                this.selectedViews.forEach(function(view){
+            endMoveView: function() {
+                this.selectedViews.forEach(function(view) {
                     view.trigger("moveEnd");
                 });
             },
-            setMoveEvents: function(){
+            setMoveEvents: function() {
                 var self = this,
                     isClickOnSvgView = false;
-                    lastPos = null;
-                $(document).mousedown(function(event){
+                lastPos = null;
+                $(document).mousedown(function(event) {
                     if (event.button == 0 && self.isMoveOperate(event)) {
                         isClickOnSvgView = self.isClickOnSvgView(event);
                         lastPos = {
@@ -215,7 +215,7 @@ require(
                         };
                     }
                 });
-                $(document).mousemove(function(event){
+                $(document).mousemove(function(event) {
                     if (lastPos && isClickOnSvgView) {
                         var offset = {
                             x: event.clientX - lastPos.x,
@@ -228,16 +228,16 @@ require(
                         self.moveView(offset);
                     }
                 });
-                $(document).click(function(event){
+                $(document).click(function(event) {
                     if (lastPos && isClickOnSvgView) {
                         self.endMoveView();
                     }
                     lastPos = null;
                     isClickOnSvgView = false;
                 });
-                $(document).keydown(function(event){
+                $(document).keydown(function(event) {
                     var key = event.key || event.keyCode,
-                        offset = {x: 0, y: 0};
+                        offset = { x: 0, y: 0 };
                     if (key == "ArrowUp" || key == 38) {
                         offset.y -= 1;
                     } else if (key == "ArrowDown" || key == 40) { // down
@@ -252,18 +252,18 @@ require(
                 });
             },
 
-            setResizeEvents: function(){
+            setResizeEvents: function() {
                 var self = this,
                     selectedView = null,
                     lastPos = null,
                     size = null,
                     points = null,
                     order = 0;
-                $(document).mousedown(function(event){
+                $(document).mousedown(function(event) {
                     if (event.button == 0 && !self.isMoveOperate(event)) {
                         selectedView = self.getSelectedViewByTarget(event);
                         points = selectedView.model.get("points");
-                        order = event.target.getAttribute("data-order") || 0;
+                        order = parseInt(event.target.getAttribute("data-order")) || 0;
                         size = {
                             width: selectedView.model.get("width") || selectedView.defaultSize.width,
                             height: selectedView.model.get("height") || selectedView.defaultSize.height,
@@ -278,23 +278,29 @@ require(
                         };
                     }
                 });
-                $(document).mousemove(function(event){
+                $(document).mousemove(function(event) {
                     if (selectedView && lastPos && size) {
                         var type = selectedView.model.get("value"),
-                            scaleOffset = C.utils.getScaleOffset(parseInt(order), lastPos, { x: event.clientX, y: event.clientY });
-                        var offset = {
-                            width: size.width + scaleOffset.x,
-                            height: size.height + scaleOffset.y,
-                            centerX: size.centerX + (event.clientX - lastPos.x)/2,
-                            centerY: size.centerY + (event.clientY - lastPos.y)/2,
-                        };
+                            pointOffset = {
+                                x: event.clientX - lastPos.x,
+                                y: event.clientY - lastPos.y
+                            },
+                            offset, scaleOffset;
                         if (type == "line" || type == "polyline") {
-                            offset.points = points;
+                            offset = _.extend({ points: points, order: order }, pointOffset);
+                        } else {
+                            scaleOffset = C.utils.getScaleOffset(order, lastPos, { x: event.clientX, y: event.clientY });
+                            offset = {
+                                width: size.width + scaleOffset.x,
+                                height: size.height + scaleOffset.y,
+                                centerX: size.centerX + pointOffset.x / 2,
+                                centerY: size.centerY + pointOffset.y / 2,
+                            };
                         }
                         selectedView.trigger("resize", offset);
                     }
                 });
-                $(document).mouseup(function(event){
+                $(document).mouseup(function(event) {
                     lastPos = null;
                     selectedView = null;
                     order = 0;
@@ -303,21 +309,21 @@ require(
             },
 
             removeSelectedView: function() {
-                this.selectedViews.forEach(function(view){
+                this.selectedViews.forEach(function(view) {
                     view.trigger("removeSelected");
                 });
                 this.selectedViews = [];
             },
 
-            updateAttrBySelectedView: function(){
+            updateAttrBySelectedView: function() {
                 var types = [];
-                this.selectedViews.forEach(function(view){
+                this.selectedViews.forEach(function(view) {
                     types.push(view.type);
                 });
-                this.attrView.trigger("showTypeAttr", {types: types});
+                this.attrView.trigger("showTypeAttr", { types: types });
             },
 
-            selectView: function(view, isAppend){
+            selectView: function(view, isAppend) {
                 if (!isAppend) {
                     var index = this.selectedViews.indexOf(view);
                     if (!!~index) {
@@ -338,13 +344,13 @@ require(
                 }
                 this.updateAttrBySelectedView();
             },
-            getInsideView: function(area){
+            getInsideView: function(area) {
                 var views = [];
-                _.each(this.subViews, function(view){
+                _.each(this.subViews, function(view) {
                     var box = view.svg.bbox(),
                         rect = [
-                            {x: box.x, y: box.y},
-                            {x: box.x2, y: box.y2},
+                            { x: box.x, y: box.y },
+                            { x: box.x2, y: box.y2 },
                         ];
                     if (view.type == "line") {
                         if (C.utils.isRectContain(area, rect)) {
@@ -356,12 +362,12 @@ require(
                 });
                 return views;
             },
-            setSelectEvents: function(){
+            setSelectEvents: function() {
                 var self = this,
                     lastPos = null;
-                    isSelecting = false,
+                isSelecting = false,
                     insideViews = [];
-                $(document).mousedown(function(event){
+                $(document).mousedown(function(event) {
                     if (event.button != 0) {
                         return;
                     }
@@ -384,7 +390,7 @@ require(
                         self.selectView(selectedView, event.ctrlKey);
                     }
                 });
-                $(document).mousemove(function(event){
+                $(document).mousemove(function(event) {
                     if (isSelecting && lastPos) {
                         if (!self.selectTipsBox) {
                             self.selectTipsBox = self.svg.group().addClass("svg-select-tips");
@@ -394,9 +400,9 @@ require(
                                 x: event.clientX,
                                 y: event.clientY
                             }),
-                            rectPoints = C.utils.getRectPoints(startPos, endPos);
+                            rectPoints = C.utils.getRectPoints([startPos, endPos]);
                         self.selectTipsBox.clear();
-                        self.selectTipsBox.rect(Math.abs(endPos.x - startPos.x), Math.abs(endPos.y-startPos.y))
+                        self.selectTipsBox.rect(Math.abs(endPos.x - startPos.x), Math.abs(endPos.y - startPos.y))
                             .attr({
                                 x: parseInt(rectPoints[0].x) + 0.5,
                                 y: parseInt(rectPoints[0].y) + 0.5
@@ -406,7 +412,7 @@ require(
                         insideViews = self.getInsideView([rectPoints[0], rectPoints[2]]);
                     }
                 });
-                $(document).mouseup(function(event){
+                $(document).mouseup(function(event) {
                     isSelecting = false;
                     lastPos = null;
                     if (self.selectTipsBox) {
@@ -414,7 +420,7 @@ require(
                     }
                     self.selectTipsBox = null;
                     if (insideViews.length) {
-                        insideViews.forEach(function(view){
+                        insideViews.forEach(function(view) {
                             self.selectedViews.push(view);
                             view.trigger("setSelected");
                         });
@@ -427,7 +433,7 @@ require(
                 this.clearItemToBeAdd();
                 this.itemToBeAdd = _.extend({}, data);
             },
-            clearItemToBeAdd: function(){
+            clearItemToBeAdd: function() {
                 if (this.elemToBeAdd) {
                     this.elemToBeAdd = null;
                 }
@@ -446,9 +452,9 @@ require(
             showItemToBeAdd: function(event) {
                 var pos = this.getMousePos(event),
                     model = this.createItem(this.itemToBeAdd, pos);
-                this.createItemView(model, {isToBeAdd: true});
+                this.createItemView(model, { isToBeAdd: true });
             },
-            removeItemView: function(){
+            removeItemView: function() {
                 if (this.elemToBeAdd) {
                     var collection = this.getTypeItem(this.elemToBeAdd.model.toJSON());
                     collection.remove(this.elemToBeAdd.model);
@@ -463,7 +469,7 @@ require(
                         this.removeItemView();
                     } else {
                         model = this.createItem(this.itemToBeAdd, pos);
-                        this.createItemView(model, {isToBeAdd: false});
+                        this.createItemView(model, { isToBeAdd: false });
                     }
                     this.clearSelectedItem();
                 }
@@ -535,24 +541,24 @@ require(
                     this.selectView(view);
                 }
             },
-            setAddViewEvents: function(){
+            setAddViewEvents: function() {
                 var self = this;
-                $(document).mousedown(function(event){
+                $(document).mousedown(function(event) {
                     if (self.isClickOnDevice(event)) {
-                        self.deviceView.trigger("setSelected", {event: event});
+                        self.deviceView.trigger("setSelected", { event: event });
                     } else if (self.isClickOnTool(event)) {
-                        self.toolView.trigger("setSelected", {event: event});
+                        self.toolView.trigger("setSelected", { event: event });
                     }
                 });
-                $(document).mousemove(function(event){
+                $(document).mousemove(function(event) {
                     self.hover(event);
                 });
-                $(document).mouseup(function(event){
+                $(document).mouseup(function(event) {
                     self.addItem(event);
                 });
             },
 
-            setBodyEvents: function(){
+            setBodyEvents: function() {
                 this.setAddViewEvents();
                 this.setMoveEvents();
                 this.setResizeEvents();
@@ -562,7 +568,7 @@ require(
                 this.listenTo(Backbone, "setScale", this.scaleSvg);
             },
             scaleSvg: function(options) {
-                C.layer.topNotify("info", {content: "scale page " + options.value + "%", shade: false, time: 2});
+                C.layer.topNotify("info", { content: "scale page " + options.value + "%", shade: false, time: 2 });
             },
 
             renderGrid: function() {
@@ -619,7 +625,7 @@ require(
             },
 
             initAttr: function() {
-                this.attrView = new Attr.view({ model: new Attr.model()});
+                this.attrView = new Attr.view({ model: new Attr.model() });
                 this.$main.append(this.attrView.render().el);
             },
 

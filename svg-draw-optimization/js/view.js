@@ -103,47 +103,47 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         getCurrentStyle: function() {},
         setStyle: function() {},
 
-        setFont: function(options){
-            C.layer.topNotify("info", {content: "set font " + options.value, shade: false, time: 2});
+        setFont: function(options) {
+            C.layer.topNotify("info", { content: "set font " + options.value, shade: false, time: 2 });
         },
-        setFontSize: function(options){
-            C.layer.topNotify("info", {content: "set font size" + options.value + "px", shade: false, time: 2});
-        },
-
-        setTextColor: function(options){
-            C.layer.topNotify("info", {content: "set text color #" + options.value, shade: false, time: 2});
-        },
-        setFillColor: function(options){
-            C.layer.topNotify("info", {content: "set fill color #" + options.value, shade: false, time: 2});
-        },
-        setBorderColor: function(options){
-            C.layer.topNotify("info", {content: "set border color #" + options.value, shade: false, time: 2});
-        },
-        setLinePoint: function(options){
-            C.layer.topNotify("info", {content: "set line point " + options.value, shade: false, time: 2});
-        },
-        setBorderWidth: function(options){
-            C.layer.topNotify("info", {content: "set border width" + options.value, shade: false, time: 2});
-        },
-        setBorderStyle: function(options){
-            C.layer.topNotify("info", {content: "set border style " + options.value, shade: false, time: 2});
+        setFontSize: function(options) {
+            C.layer.topNotify("info", { content: "set font size" + options.value + "px", shade: false, time: 2 });
         },
 
-        setArrange: function(options){
-            C.layer.topNotify("info", {content: "set arrange " + options.value, shade: false, time: 2});
+        setTextColor: function(options) {
+            C.layer.topNotify("info", { content: "set text color #" + options.value, shade: false, time: 2 });
+        },
+        setFillColor: function(options) {
+            C.layer.topNotify("info", { content: "set fill color #" + options.value, shade: false, time: 2 });
+        },
+        setBorderColor: function(options) {
+            C.layer.topNotify("info", { content: "set border color #" + options.value, shade: false, time: 2 });
+        },
+        setLinePoint: function(options) {
+            C.layer.topNotify("info", { content: "set line point " + options.value, shade: false, time: 2 });
+        },
+        setBorderWidth: function(options) {
+            C.layer.topNotify("info", { content: "set border width" + options.value, shade: false, time: 2 });
+        },
+        setBorderStyle: function(options) {
+            C.layer.topNotify("info", { content: "set border style " + options.value, shade: false, time: 2 });
         },
 
-        createBorder: function(positionGroup, isShow){
+        setArrange: function(options) {
+            C.layer.topNotify("info", { content: "set arrange " + options.value, shade: false, time: 2 });
+        },
+
+        createBorder: function(positionGroup, isShow) {
             var padding = 0,
                 corderWidth = 6,
                 box = positionGroup.bbox(),
                 group = this.svg.group().addClass("svg-group-border"),
                 centerPoints = [
                     box,
-                    {cx: box.cx - box.width/2 - padding, cy: box.cy - box.height/2 - padding, width: corderWidth, height: corderWidth},
-                    {cx: box.cx + box.width/2 + padding, cy: box.cy - box.height/2 - padding, width: corderWidth, height: corderWidth},
-                    {cx: box.cx + box.width/2 + padding, cy: box.cy + box.height/2 + padding, width: corderWidth, height: corderWidth},
-                    {cx: box.cx - box.width/2 - padding, cy: box.cy + box.height/2 + padding, width: corderWidth, height: corderWidth},
+                    { cx: box.cx - box.width / 2 - padding, cy: box.cy - box.height / 2 - padding, width: corderWidth, height: corderWidth },
+                    { cx: box.cx + box.width / 2 + padding, cy: box.cy - box.height / 2 - padding, width: corderWidth, height: corderWidth },
+                    { cx: box.cx + box.width / 2 + padding, cy: box.cy + box.height / 2 + padding, width: corderWidth, height: corderWidth },
+                    { cx: box.cx - box.width / 2 - padding, cy: box.cy + box.height / 2 + padding, width: corderWidth, height: corderWidth },
                 ],
                 path = null;
             if (!isShow) {
@@ -151,16 +151,16 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             }
             group.back();
             this.borderGroup = group;
-            for (var i = 0, len = centerPoints.length; i < len; i ++) {
+            for (var i = 0, len = centerPoints.length; i < len; i++) {
                 box = centerPoints[i];
                 path = group.path(
-                    "M " + (box.cx - box.width/2) + " " + (box.cy - box.height/2) +
-                    "L " + (box.cx + box.width/2) + " " + (box.cy - box.height/2) +
-                    "L " + (box.cx + box.width/2) + " " + (box.cy + box.height/2) +
-                    "L " + (box.cx - box.width/2) + " " + (box.cy + box.height/2) +
+                    "M " + (box.cx - box.width / 2) + " " + (box.cy - box.height / 2) +
+                    "L " + (box.cx + box.width / 2) + " " + (box.cy - box.height / 2) +
+                    "L " + (box.cx + box.width / 2) + " " + (box.cy + box.height / 2) +
+                    "L " + (box.cx - box.width / 2) + " " + (box.cy + box.height / 2) +
                     "Z"
                 );
-                path.stroke({ color: "#60f"})
+                path.stroke({ color: "#60f" })
                     .fill("#fff");
                 if (i != 0) {
                     path.addClass("svg-border-corner").attr("data-order", i);
@@ -173,29 +173,29 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             }
         },
 
-        createConnectPoints: function(positionGroup, isShow){
+        createConnectPoints: function(positionGroup, isShow) {
             var padding = 0,
                 corderWidth = 6,
                 box = positionGroup.bbox(),
                 group = this.svg.group().addClass("svg-group-points"),
                 centerPoints = [
-                    {cx: box.cx, cy: box.cy - box.height/2 - padding, width: corderWidth},
-                    {cx: box.cx + box.width/2 + padding, cy: box.cy, width: corderWidth},
-                    {cx: box.cx, cy: box.cy + box.height/2 + padding, width: corderWidth},
-                    {cx: box.cx - box.width/2 - padding, cy: box.cy, width: corderWidth},
+                    { cx: box.cx, cy: box.cy - box.height / 2 - padding, width: corderWidth },
+                    { cx: box.cx + box.width / 2 + padding, cy: box.cy, width: corderWidth },
+                    { cx: box.cx, cy: box.cy + box.height / 2 + padding, width: corderWidth },
+                    { cx: box.cx - box.width / 2 - padding, cy: box.cy, width: corderWidth },
                 ],
                 circle = null;
             if (!isShow) {
                 group.addClass("dsn");
             }
             this.pointGroup = group;
-            for (var i = 0, len = centerPoints.length; i < len; i ++) {
+            for (var i = 0, len = centerPoints.length; i < len; i++) {
                 box = centerPoints[i];
                 circle = group.circle(box.width).center(box.cx, box.cy)
                 circle.fill("#999");
             }
         },
-        setPointGroupStatus: function(isShow){
+        setPointGroupStatus: function(isShow) {
             if (!this.pointGroup) {
                 return;
             }
@@ -205,7 +205,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 this.pointGroup.addClass("dsn");
             }
         },
-        setBorderGroupStatus: function(isShow){
+        setBorderGroupStatus: function(isShow) {
             if (!this.borderGroup) {
                 return;
             }
@@ -215,26 +215,26 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 this.borderGroup.addClass("dsn");
             }
         },
-        removeSelected: function(){
+        removeSelected: function() {
             this.setBorderGroupStatus(false);
             this.isSelected = false;
         },
-        selectedView: function(){
+        selectedView: function() {
             this.setBorderGroupStatus(true);
             this.isSelected = true;
         },
-        moveView: function(offset){
+        moveView: function(offset) {
             var transform = this.svg.transform();
             this.svg.transform({
-                x: transform.x+offset.x,
-                y: transform.y+offset.y
+                x: transform.x + offset.x,
+                y: transform.y + offset.y
             });
         },
-        moveEnd: function(){
+        moveEnd: function() {
             var transform = this.svg.transform();
             this.model.set({ offset: transform });
         },
-        resizeView: function(size){
+        resizeView: function(size) {
             this.model.set({
                 width: size.width,
                 height: size.height,
@@ -269,46 +269,61 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 "moveEnd": this.moveEnd,
                 "resize": this.resizeView,
             }, this);
-        },
-
-        events: {
-        },
-        resizeView: function(size){
+            var points = this.getPoints(),
+                rect = C.utils.getPointsRectInfo(points);
+            console.log(rect);
             this.model.set({
-                width: size.width,
-                height: size.height,
-                centerX: size.centerX,
-                centerY: size.centerY
+                points: points,
+                width: rect.width,
+                height: rect.height || 1,
+                centerX: rect.cx,
+                centerY: rect.cy
             });
         },
-        createBorder: function(isShow){
+
+        events: {},
+        resizeView: function(options) {
+            // 更新变动点的坐标
+            options.points[options.order].x += options.x;
+            options.points[options.order].y += options.y;
+            var rect = C.utils.getPointsRectInfo(options.points);
+            this.model.set({
+                width: rect.width,
+                height: rect.height,
+                centerX: rect.cx,
+                centerY: rect.cy,
+                points: points
+            });
+        },
+        createBorder: function(isShow) {
             var points = this.getMovePoints();
-                corderWidth = 4,
+            corderWidth = 4,
                 group = this.svg.group().addClass("svg-group-border"),
                 centerPoints = [
-                    {cx: points.start.x, cy: points.start.y, width: corderWidth, height: corderWidth},
-                    {cx: points.end.x, cy: points.end.y, width: corderWidth, height: corderWidth},
+                    { cx: points.start.x, cy: points.start.y, width: corderWidth, height: corderWidth },
+                    { cx: points.end.x, cy: points.end.y, width: corderWidth, height: corderWidth },
                 ],
                 path = null;
-            if (points.mid){
-                centerPoints.push({cx: points.mid.x, cy: points.mid.y, width: corderWidth, height: corderWidth});
+            if (points.mid) {
+                centerPoints.push({ cx: points.mid.x, cy: points.mid.y, width: corderWidth, height: corderWidth });
             }
             if (!isShow) {
                 group.addClass("dsn");
             }
             this.borderGroup = group;
-            for (var i = 0, len = centerPoints.length; i < len; i ++) {
+            for (var i = 0, len = centerPoints.length; i < len; i++) {
                 box = centerPoints[i];
                 path = group.path(
-                    "M " + (box.cx - box.width/2) + " " + (box.cy - box.height/2) +
-                    "L " + (box.cx + box.width/2) + " " + (box.cy - box.height/2) +
-                    "L " + (box.cx + box.width/2) + " " + (box.cy + box.height/2) +
-                    "L " + (box.cx - box.width/2) + " " + (box.cy + box.height/2) +
+                    "M " + (box.cx - box.width / 2) + " " + (box.cy - box.height / 2) +
+                    "L " + (box.cx + box.width / 2) + " " + (box.cy - box.height / 2) +
+                    "L " + (box.cx + box.width / 2) + " " + (box.cy + box.height / 2) +
+                    "L " + (box.cx - box.width / 2) + " " + (box.cy + box.height / 2) +
                     "Z"
                 );
-                path.stroke({ color: "#60f"})
+                path.stroke({ color: "#60f" })
                     .fill("#fff")
-                    .addClass("svg-border-corner svg-cursor-nesw");
+                    .addClass("svg-border-corner svg-cursor-nesw")
+                    .attr("data-order", i);
                 if (i == 0) {
                     path.removeClass("svg-cursor-nesw").addClass("svg-cursor-nwse");
                 }
@@ -317,49 +332,47 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 }
             }
         },
-        getSize: function(){
+        getSize: function() {
             return {
                 width: this.model.get("width") || this.defaultSize.width,
                 height: this.model.get("height") || this.defaultSize.height
             }
         },
-        getLineDefaultPoints: function(){
+        getLineDefaultPoints: function() {
             var modelData = this.model.toJSON(),
                 size = this.getSize();
-            return {
-                start: {
+            return [{
                     x: parseInt(modelData.centerX - size.width / 2),
                     y: parseInt(modelData.centerY)
-                }, 
-                end: {
+                },
+                {
                     x: parseInt(modelData.centerX + size.width / 2),
                     y: parseInt(modelData.centerY)
                 }
-            };
+            ];
         },
-        getPolylineDefaultPoints: function(){
+        getPolylineDefaultPoints: function() {
             var modelData = this.model.toJSON(),
                 size = this.getSize();
-            return {
-                start: {
+            return [{
                     x: parseInt(modelData.centerX - size.width / 2),
                     y: parseInt(modelData.centerY - size.height / 2)
                 },
-                point1: {
+                {
                     x: parseInt(modelData.centerX),
                     y: parseInt(modelData.centerY - size.height / 2)
                 },
-                point2: {
+                {
                     x: parseInt(modelData.centerX),
                     y: parseInt(modelData.centerY + size.height / 2)
                 },
-                end: {
+                {
                     x: parseInt(modelData.centerX + size.width / 2),
                     y: parseInt(modelData.centerY + size.height / 2)
                 }
-            };
+            ];
         },
-        getPoints: function(){
+        getPoints: function() {
             var modelData = this.model.toJSON();
             if (modelData.points.length) {
                 return modelData.points;
@@ -370,44 +383,44 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 return this.getPolylineDefaultPoints();
             }
         },
-        getEndPoints: function(){
+        getEndPoints: function() {
             var points = this.getPoints();
             return {
-                start: points.start,
-                end: points.end
+                start: points[0],
+                end: points[points.length - 1]
             };
         },
-        getMidPoints: function(){
+        getMidPoints: function() {
             var points = this.getPoints();
-            if (points.point1 || points.point2) {
+            if (points.length > 2) {
                 return {
-                    point1: points.point1,
-                    point2: points.point2
+                    point1: points[1],
+                    point2: points[2]
                 };
             }
             return null;
         },
-        getMovePoints: function(){
+        getMovePoints: function() {
             var modelData = this.model.toJSON();
-                points = this.getEndPoints();
+            points = this.getEndPoints();
             if (modelData.value == "line") {
                 return points;
             }
-            return _.extend({mid: {x: modelData.centerX, y: modelData.centerY}}, points);
+            return _.extend({ mid: { x: modelData.centerX, y: modelData.centerY } }, points);
         },
         create: function(pos, type) {
             var group = this.svg.group().addClass("svg-line-group"),
                 line = null,
                 d = "",
                 points = this.getPoints();
-            if (points.point1) {
-                d = "M " + points.start.x + " " + points.start.y +
-                    " L " + points.point1.x + " " + points.point1.y +
-                    " L " + points.point2.x + " " + points.point2.y +
-                    " L " + points.end.x + " " + points.end.y;
+            if (points.length > 2) {
+                d = "M " + points[0].x + " " + points[0].y +
+                    " L " + points[1].x + " " + points[1].y +
+                    " L " + points[2].x + " " + points[2].y +
+                    " L " + points[3].x + " " + points[3].y;
             } else {
-                d = "M " + points.start.x + " " + points.start.y +
-                    " L " + points.end.x + " " + points.end.y;
+                d = "M " + points[0].x + " " + points[0].y +
+                    " L " + points[1].x + " " + points[1].y;
             }
             group.path(d).attr({
                 stroke: "transparent",
