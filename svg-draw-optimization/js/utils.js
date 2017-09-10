@@ -27,7 +27,17 @@ define(["jquery"], function($) {
             };
         })(),
 
-        distance: function(pointA, pointB) {},
+        distance: function(pointA, pointB) {
+            return Math.sqrt(Math.pow(pointA.x - pointB.x, 2) + Math.pow(pointA.y - pointB.y, 2));
+        },
+        // 是否可以智能靠近
+        canAutoConnect: function(pointA, pointB, diff) {
+            if (typeof diff != "number") {
+                diff = 10;
+            }
+            var dis = this.distance(pointA, pointB);
+            return dis <= 10;
+        },
         // 根据给定点，计算最小包含矩形的四个点，按照顺时针顺序返回点集
         getRectPoints: function(points) {
             var xValues = points.map(function(item) { return item.x; }),

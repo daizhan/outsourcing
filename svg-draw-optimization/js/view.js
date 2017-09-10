@@ -135,15 +135,15 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
 
         createBorder: function(positionGroup, isShow) {
             var padding = 0,
-                corderWidth = 6,
+                cornerWidth = 6,
                 box = positionGroup.bbox(),
                 group = this.svg.group().addClass("svg-group-border"),
                 centerPoints = [
                     box,
-                    { cx: box.cx - box.width / 2 - padding, cy: box.cy - box.height / 2 - padding, width: corderWidth, height: corderWidth },
-                    { cx: box.cx + box.width / 2 + padding, cy: box.cy - box.height / 2 - padding, width: corderWidth, height: corderWidth },
-                    { cx: box.cx + box.width / 2 + padding, cy: box.cy + box.height / 2 + padding, width: corderWidth, height: corderWidth },
-                    { cx: box.cx - box.width / 2 - padding, cy: box.cy + box.height / 2 + padding, width: corderWidth, height: corderWidth },
+                    { cx: box.cx - box.width / 2 - padding, cy: box.cy - box.height / 2 - padding, width: cornerWidth, height: cornerWidth },
+                    { cx: box.cx + box.width / 2 + padding, cy: box.cy - box.height / 2 - padding, width: cornerWidth, height: cornerWidth },
+                    { cx: box.cx + box.width / 2 + padding, cy: box.cy + box.height / 2 + padding, width: cornerWidth, height: cornerWidth },
+                    { cx: box.cx - box.width / 2 - padding, cy: box.cy + box.height / 2 + padding, width: cornerWidth, height: cornerWidth },
                 ],
                 path = null;
             if (!isShow) {
@@ -172,18 +172,20 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 }
             }
         },
-
-        createConnectPoints: function(positionGroup, isShow) {
+        getConnectPoints: function(positionGroup) {
             var padding = 0,
-                corderWidth = 6,
-                box = positionGroup.bbox(),
-                group = this.svg.group().addClass("svg-group-points"),
-                centerPoints = [
-                    { cx: box.cx, cy: box.cy - box.height / 2 - padding, width: corderWidth },
-                    { cx: box.cx + box.width / 2 + padding, cy: box.cy, width: corderWidth },
-                    { cx: box.cx, cy: box.cy + box.height / 2 + padding, width: corderWidth },
-                    { cx: box.cx - box.width / 2 - padding, cy: box.cy, width: corderWidth },
-                ],
+                box = positionGroup.bbox();
+            return [
+                { x: box.cx, y: box.cy - box.height / 2 - padding },
+                { x: box.cx + box.width / 2 + padding, y: box.cy },
+                { x: box.cx, y: box.cy + box.height / 2 + padding },
+                { x: box.cx - box.width / 2 - padding, y: box.cy }
+            ];
+        },
+        createConnectPoints: function(positionGroup, isShow) {
+            var group = this.svg.group().addClass("svg-group-points"),
+                cornerWidth = 6,
+                centerPoints = this.getConnectPoints(positionGroup),
                 circle = null;
             if (!isShow) {
                 group.addClass("dsn");
@@ -191,7 +193,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             this.pointGroup = group;
             for (var i = 0, len = centerPoints.length; i < len; i++) {
                 box = centerPoints[i];
-                circle = group.circle(box.width).center(box.cx, box.cy)
+                circle = group.circle(cornerWidth).center(box.x, box.y)
                 circle.fill("#999");
             }
         },
@@ -203,6 +205,15 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 this.pointGroup.removeClass("dsn");
             } else {
                 this.pointGroup.addClass("dsn");
+            }
+        },
+        showConnectPoints: function(options) {
+            if (options.id == this.id) {
+                this.setPointGroupStatus(true);
+                this.isShowPoints = true;
+            } else {
+                this.setPointGroupStatus(false);
+                this.isShowPoints = false;
             }
         },
         setBorderGroupStatus: function(isShow) {
@@ -217,10 +228,14 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         },
         removeSelected: function() {
             this.setBorderGroupStatus(false);
+            this.setPointGroupStatus(false);
             this.isSelected = false;
+            this.isShowPoints = false;
         },
         selectedView: function() {
             this.setBorderGroupStatus(true);
+            this.setPointGroupStatus(true);
+            this.isShowPoints = true;
             this.isSelected = true;
         },
         moveView: function(offset) {
@@ -262,7 +277,8 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             this.pointGroup = null;
 
             this.isSelected = false;
-
+            this.connectDis = 5;
+            this.closeDis = 10;
             this.setElement(this.svg.node);
             this.on({
                 "move": this.moveView,
@@ -287,7 +303,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         createBorder: function(isShow) {
             var endPoints = this.getPoints(),
                 points = this.getMovePoints(),
-                corderWidth = 4,
+                cornerWidth = 4,
                 group = this.svg.group().addClass("svg-group-border"),
                 path = null;
             if (!isShow) {
@@ -297,10 +313,10 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             for (var i = 0, len = points.length; i < len; i++) {
                 box = points[i];
                 path = group.path(
-                    "M " + (box.x - corderWidth / 2) + " " + (box.y - corderWidth / 2) +
-                    "L " + (box.x + corderWidth / 2) + " " + (box.y - corderWidth / 2) +
-                    "L " + (box.x + corderWidth / 2) + " " + (box.y + corderWidth / 2) +
-                    "L " + (box.x - corderWidth / 2) + " " + (box.y + corderWidth / 2) +
+                    "M " + (box.x - cornerWidth / 2) + " " + (box.y - cornerWidth / 2) +
+                    "L " + (box.x + cornerWidth / 2) + " " + (box.y - cornerWidth / 2) +
+                    "L " + (box.x + cornerWidth / 2) + " " + (box.y + cornerWidth / 2) +
+                    "L " + (box.x - cornerWidth / 2) + " " + (box.y + cornerWidth / 2) +
                     "Z"
                 );
                 if (i == 0) {
@@ -460,12 +476,15 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             this.rectGroup = null;
             this.pointGroup = null;
             this.isSelected = false;
+            this.isShowPoints = false;
             this.setElement(this.svg.node);
             this.on({
                 "move": this.moveView,
                 "moveEnd": this.moveEnd,
                 "resize": this.resizeView,
             }, this);
+
+            this.listenTo(Backbone, "lineClose", this.showConnectPoints);
         },
 
         events: {
@@ -542,6 +561,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             this.borderGroup = null;
             this.pointGroup = null;
             this.isSelected = false;
+            this.isShowPoints = false;
             this.setElement(this.svg.node);
 
             this.on({

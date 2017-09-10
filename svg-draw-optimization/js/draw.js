@@ -251,7 +251,34 @@ require(
                     self.endMoveView();
                 });
             },
-
+            getClosestViewInfo: function(point, diff) {
+                var target = {},
+                    hasFound = false;
+                _.each(this.subViews, function(view) {
+                    if (hasFound) {
+                        return;
+                    }
+                    if (view.type == "rect" || view.type == "device") {
+                        var connectPoints = view.getConnectPoints(view[view.type + "Group"]);
+                        for (var i = 0; i < connectPoints.length; i++) {
+                            var dis = C.utils.distance(point, connectPoints[i]);
+                            if (!target.minDis || dis < target.minDis) {
+                                target.minDis = dis;
+                                target.point = connectPoints[i];
+                                target.view = view;
+                            }
+                        }
+                    }
+                });
+                if (diff) {
+                    if (target.minDis <= diff) {
+                        return target;
+                    } else {
+                        return {};
+                    }
+                }
+                return target;
+            },
             setResizeEvents: function() {
                 var self = this,
                     selectedView = null,
@@ -287,7 +314,28 @@ require(
                             },
                             offset, scaleOffset;
                         if (type == "line" || type == "polyline") {
-                            offset = _.extend({ points: C.utils.deepCopy(points), order: order }, pointOffset);
+                            if (order == 0 || (type == "polyline" && order == points.length) || (type == "line" && order == points.length - 1)) {
+                                var index = type == "line" ? order : Math.max(order - 1, 0),
+                                    viewInfo = self.getClosestViewInfo({
+                                            x: points[index].x + pointOffset.x,
+                                            y: points[index].y + pointOffset.y
+                                        },
+                                        selectedView.closeDis
+                                    );
+                                if (viewInfo.view) {
+                                    Backbone.trigger("lineClose", { id: viewInfo.view.id });
+                                    if (viewInfo.minDis <= selectedView.connectDis) {
+                                        pointOffset = {
+                                            x: viewInfo.point.x - points[index].x,
+                                            y: viewInfo.point.y - points[index].y
+                                        };
+                                        viewInfo.isConnected = true;
+                                    }
+                                } else {
+                                    Backbone.trigger("lineClose", {});
+                                }
+                            }
+                            offset = _.extend({ points: C.utils.deepCopy(points), order: order }, pointOffset, viewInfo);
                         } else {
                             scaleOffset = C.utils.getScaleOffset(order, lastPos, { x: event.clientX, y: event.clientY });
                             offset = {
@@ -301,6 +349,9 @@ require(
                     }
                 });
                 $(document).mouseup(function(event) {
+                    if (selectedView) {
+                        Backbone.trigger("lineClose", {});
+                    }
                     lastPos = null;
                     selectedView = null;
                     order = 0;
