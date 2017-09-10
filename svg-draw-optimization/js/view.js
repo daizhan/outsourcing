@@ -274,8 +274,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         events: {},
         resizeView: function(options) {
             // 更新变动点的坐标
-            options.points[options.order].x += options.x;
-            options.points[options.order].y += options.y;
+            options.points = C.utils.updateLinePoints(options.points, options.order, { x: options.x, y: options.y });
             var rect = C.utils.getPointsRectInfo(options.points);
             this.model.set({
                 width: rect.width,
@@ -286,40 +285,39 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             });
         },
         createBorder: function(isShow) {
-            var points = this.getMovePoints();
-            corderWidth = 4,
+            var endPoints = this.getPoints(),
+                points = this.getMovePoints(),
+                corderWidth = 4,
                 group = this.svg.group().addClass("svg-group-border"),
-                centerPoints = [
-                    { cx: points.start.x, cy: points.start.y, width: corderWidth, height: corderWidth },
-                    { cx: points.end.x, cy: points.end.y, width: corderWidth, height: corderWidth },
-                ],
                 path = null;
-            if (points.mid) {
-                centerPoints.push({ cx: points.mid.x, cy: points.mid.y, width: corderWidth, height: corderWidth });
-            }
             if (!isShow) {
                 group.addClass("dsn");
             }
             this.borderGroup = group;
-            for (var i = 0, len = centerPoints.length; i < len; i++) {
-                box = centerPoints[i];
+            for (var i = 0, len = points.length; i < len; i++) {
+                box = points[i];
                 path = group.path(
-                    "M " + (box.cx - box.width / 2) + " " + (box.cy - box.height / 2) +
-                    "L " + (box.cx + box.width / 2) + " " + (box.cy - box.height / 2) +
-                    "L " + (box.cx + box.width / 2) + " " + (box.cy + box.height / 2) +
-                    "L " + (box.cx - box.width / 2) + " " + (box.cy + box.height / 2) +
+                    "M " + (box.x - corderWidth / 2) + " " + (box.y - corderWidth / 2) +
+                    "L " + (box.x + corderWidth / 2) + " " + (box.y - corderWidth / 2) +
+                    "L " + (box.x + corderWidth / 2) + " " + (box.y + corderWidth / 2) +
+                    "L " + (box.x - corderWidth / 2) + " " + (box.y + corderWidth / 2) +
                     "Z"
                 );
+                if (i == 0) {
+                    resizeClass = "svg-cursor-nwse";
+                } else if (i == points.length - 1) {
+                    resizeClass = "svg-cursor-nesw";
+                } else {
+                    if (C.utils.isFloatEqual(endPoints[i - 1].x, endPoints[i].x)) {
+                        resizeClass = "svg-cursor-ew";
+                    } else {
+                        resizeClass = "svg-cursor-ns";
+                    }
+                }
                 path.stroke({ color: "#60f" })
                     .fill("#fff")
-                    .addClass("svg-border-corner svg-cursor-nesw")
+                    .addClass("svg-border-corner " + resizeClass)
                     .attr("data-order", i);
-                if (i == 0) {
-                    path.removeClass("svg-cursor-nesw").addClass("svg-cursor-nwse");
-                }
-                if (i == 2) {
-                    path.removeClass("svg-cursor-nesw").addClass("svg-cursor-ew");
-                }
             }
         },
         getSize: function() {
@@ -381,22 +379,29 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             };
         },
         getMidPoints: function() {
-            var points = this.getPoints();
+            var points = this.getPoints(),
+                midPoints = [];
             if (points.length > 2) {
-                return {
-                    point1: points[1],
-                    point2: points[2]
-                };
+                for (var i = 1; i < points.length; i++) {
+                    midPoints.push({
+                        x: (points[i - 1].x + points[i].x) / 2,
+                        y: (points[i - 1].y + points[i].y) / 2
+                    });
+                }
             }
-            return null;
+            return midPoints;
         },
         getMovePoints: function() {
-            var modelData = this.model.toJSON();
-            points = this.getEndPoints();
+            var modelData = this.model.toJSON(),
+                points = this.getEndPoints(),
+                midPoints;
+            points = [points.start, points.end];
             if (modelData.value == "line") {
                 return points;
             }
-            return _.extend({ mid: { x: modelData.centerX, y: modelData.centerY } }, points);
+            midPoints = this.getMidPoints();
+            Array.prototype.splice.apply(points, ([1, 0]).concat(midPoints));
+            return points;
         },
         create: function(pos, type) {
             var group = this.svg.group().addClass("svg-line-group"),

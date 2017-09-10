@@ -287,7 +287,7 @@ require(
                             },
                             offset, scaleOffset;
                         if (type == "line" || type == "polyline") {
-                            offset = _.extend({ points: points, order: order }, pointOffset);
+                            offset = _.extend({ points: C.utils.deepCopy(points), order: order }, pointOffset);
                         } else {
                             scaleOffset = C.utils.getScaleOffset(order, lastPos, { x: event.clientX, y: event.clientY });
                             offset = {

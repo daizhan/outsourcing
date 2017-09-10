@@ -137,5 +137,74 @@ define(["jquery"], function($) {
             });
             return points;
         },
+        isFloatEqual: function(a, b) {
+            var maxDiff = Math.pow(10, -5);
+            return Math.abs(a - b) < maxDiff;
+        },
+        updateLinePoints: function(points, index, offset) {
+            var affectPoints,
+                endIndex;
+            if (points.length == 2) {
+                points[index].x += offset.x;
+                points[index].y += offset.y;
+                return points;
+            }
+            if (index == 0) {
+                affectPoints = points.slice(0, 2);
+            } else if (index == points.length) {
+                affectPoints = points.slice(-2);
+            } else {
+                affectPoints = [points[index - 1], points[index]];
+            }
+            // 重合，一起偏移
+            if (this.isFloatEqual(affectPoints[0].x, affectPoints[1].x) && this.isFloatEqual(affectPoints[0].y, affectPoints[1].y)) {
+                affectPoints[0].x += offset.x;
+                affectPoints[1].x += offset.x;
+                affectPoints[0].y += offset.y;
+                affectPoints[1].y += offset.y;
+            } else {
+                // 垂直线
+                if (this.isFloatEqual(affectPoints[0].x, affectPoints[1].x)) {
+                    affectPoints[0].x += offset.x;
+                    affectPoints[1].x += offset.x;
+                    if (index == 0 || index == points.length) { // 端点
+                        endIndex = Math.min(Math.max(index - 1, 0), affectPoints.length - 1);
+                        affectPoints[endIndex].y += offset.y;
+                    }
+                }
+                if (this.isFloatEqual(affectPoints[0].y, affectPoints[1].y)) { // 水平线
+                    affectPoints[0].y += offset.y;
+                    affectPoints[1].y += offset.y;
+                    if (index == 0 || index == points.length) { // 端点
+                        endIndex = Math.min(Math.max(index - 1, 0), affectPoints.length - 1);
+                        affectPoints[endIndex].x += offset.x;
+                    }
+                }
+            }
+            return points;
+        },
+        deepCopy: function(obj) {
+            var newObj = null;
+            if (Array.isArray(obj)) {
+                newObj = [];
+                for (var i = 0; i < obj.length; i++) {
+                    newObj.push(this.deepCopy(obj[i]));
+                }
+            } else if (typeof obj == "object") {
+                newObj = {};
+                for (var key in obj) {
+                    if (!obj.hasOwnProperty(key)) {
+                        continue;
+                    }
+                    var type = typeof obj[key];
+                    if (type != "object") {
+                        newObj[key] = obj[key];
+                    } else {
+                        newObj[key] = this.deepCopy(obj[key]);
+                    }
+                }
+            }
+            return newObj;
+        }
     }
 });
