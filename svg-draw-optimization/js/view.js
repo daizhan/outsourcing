@@ -15,7 +15,11 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         },
 
         getSvgRoot: function(isSvgNode) {
-            return this.svg.doc();
+            var svgRoot = this.svg.doc();
+            if (!svgRoot) {
+                svgRoot = SVG($(".draw-content")[0]);
+            }
+            return svgRoot;
         },
         getMainContainerElem: function() {
             return $(this.svg.node).parents(".draw-container");
@@ -419,10 +423,26 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             Array.prototype.splice.apply(points, ([1, 0]).concat(midPoints));
             return points;
         },
+        createArrow: function() {
+            var svgRoot = this.getSvgRoot();
+            if (this.arrow) {
+                return this.arrow;
+            }
+            this.arrow = svgRoot.marker(10, 10, function(add) {
+                add.path("M 0 0 L 10 5 L 0 10 z");
+                this.attr({
+                    refX: 10,
+                    refY: 5
+                });
+            });
+            return this.arrow;
+        },
         create: function(pos, type) {
             var group = this.svg.group().addClass("svg-line-group"),
                 line = null,
                 d = "",
+                path,
+                marker,
                 points = C.utils.parsePointInt(this.getPoints());
             if (points.length > 2) {
                 d = "M " + points[0].x + " " + points[0].y +
@@ -438,10 +458,10 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 "stroke-width": 5,
                 fill: "transparent"
             });
-            group.path(d).attr({
+            path = group.path(d).attr({
                 stroke: this.defaultStyle.strokeColor,
                 fill: "transparent"
-            });
+            }).marker("end", this.createArrow());
         },
         render: function() {
             var data = this.model.toJSON();
