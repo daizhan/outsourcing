@@ -275,6 +275,8 @@ require(
                     points = this.getLinePoints(view, event, offset),
                     rect = C.utils.getPointsRectInfo(points);
                 model = this.lineCollections.create({
+                    type: "tool",
+                    value: "line",
                     width: rect.width,
                     height: rect.height,
                     centerX: rect.cx,
@@ -283,19 +285,24 @@ require(
                 });
                 line = new View.line({ model: model, viewId: C.utils.count() });
                 this.svg.add(line.render().svg);
+                this.addSubView(line);
                 return line;
             },
             updateConnectLine: function(line, view, offset) {
                 var points = line.model.get("points"),
                     len = points.length;
-                points[len - 1].x += offset.x;
-                points[len - 1].y += offset.y;
-                line.model.set({ points: points });
+                offset = this.getResizeLineOffset(
+                    line,
+                    len > 2 ? len : len - 1,
+                    line.model.get("value"),
+                    points,
+                    offset
+                );
+                line.trigger("resize", offset);
             },
             setCreateLineEvents: function() {
                 var self = this,
                     connectLine = null,
-                    selectedView = null,
                     lastPos = null;
                 $(document).mousedown(function(event) {
                     if (event.button == 0 && self.isClickOnCreateLine(event)) {
@@ -317,12 +324,18 @@ require(
                         } else {
                             self.updateConnectLine(connectLine, selectedView, offset);
                         }
+                        lastPos = {
+                            x: event.clientX,
+                            y: event.clientY
+                        };
                     }
                 });
-                $(document).click(function(event) {
+                $(document).mouseup(function(event) {
+                    if (connectLine) {
+                        Backbone.trigger("lineClose", {});
+                    }
                     connectLine = null;
                     lastPos = null;
-                    selectedView = null;
                 });
             },
             getClosestViewInfo: function(point, diff) {
@@ -352,6 +365,30 @@ require(
                     }
                 }
                 return target;
+            },
+            getResizeLineOffset: function(selectedView, order, type, points, pointOffset) {
+                if (order == 0 || (type == "polyline" && order == points.length) || (type == "line" && order == points.length - 1)) {
+                    var index = type == "line" ? order : Math.max(order - 1, 0),
+                        viewInfo = this.getClosestViewInfo({
+                                x: points[index].x + pointOffset.x,
+                                y: points[index].y + pointOffset.y
+                            },
+                            selectedView.closeDis
+                        );
+                    if (viewInfo.view) {
+                        Backbone.trigger("lineClose", { id: viewInfo.view.id });
+                        if (viewInfo.minDis <= selectedView.connectDis) {
+                            pointOffset = {
+                                x: viewInfo.point.x - points[index].x,
+                                y: viewInfo.point.y - points[index].y
+                            };
+                            viewInfo.isConnected = true;
+                        }
+                    } else {
+                        Backbone.trigger("lineClose", {});
+                    }
+                }
+                return _.extend({ points: C.utils.deepCopy(points), order: order }, pointOffset, viewInfo);
             },
             setResizeEvents: function() {
                 var self = this,
@@ -388,28 +425,7 @@ require(
                             },
                             offset, scaleOffset;
                         if (type == "line" || type == "polyline") {
-                            if (order == 0 || (type == "polyline" && order == points.length) || (type == "line" && order == points.length - 1)) {
-                                var index = type == "line" ? order : Math.max(order - 1, 0),
-                                    viewInfo = self.getClosestViewInfo({
-                                            x: points[index].x + pointOffset.x,
-                                            y: points[index].y + pointOffset.y
-                                        },
-                                        selectedView.closeDis
-                                    );
-                                if (viewInfo.view) {
-                                    Backbone.trigger("lineClose", { id: viewInfo.view.id });
-                                    if (viewInfo.minDis <= selectedView.connectDis) {
-                                        pointOffset = {
-                                            x: viewInfo.point.x - points[index].x,
-                                            y: viewInfo.point.y - points[index].y
-                                        };
-                                        viewInfo.isConnected = true;
-                                    }
-                                } else {
-                                    Backbone.trigger("lineClose", {});
-                                }
-                            }
-                            offset = _.extend({ points: C.utils.deepCopy(points), order: order }, pointOffset, viewInfo);
+                            offset = self.getResizeLineOffset(selectedView, order, type, points, pointOffset);
                         } else {
                             scaleOffset = C.utils.getScaleOffset(order, lastPos, { x: event.clientX, y: event.clientY });
                             offset = {
