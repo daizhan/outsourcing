@@ -157,13 +157,16 @@ require(
                 }
                 return null;
             },
+            isClickOnCreateLine: function(event) {
+                var className = "svg-group-points";
+                return this.isClickOnEle(event, className);
+            },
+            isClickOnResize: function(event) {
+                var className = "svg-group-border";
+                return this.isClickOnEle(event, className);
+            },
             isMoveOperate: function(event) {
-                var className = "svg-group-border",
-                    $target = $(event.target);
-                if ($target.hasClass(className) || $target.parents("." + className).length) {
-                    return false;
-                }
-                return true;
+                return !this.isClickOnResize(event) && !this.isClickOnCreateLine(event);
             },
             isClickOnEle: function(event, className) {
                 var $target = $(event.target);
@@ -204,8 +207,8 @@ require(
             },
             setMoveEvents: function() {
                 var self = this,
-                    isClickOnSvgView = false;
-                lastPos = null;
+                    isClickOnSvgView = false,
+                    lastPos = null;
                 $(document).mousedown(function(event) {
                     if (event.button == 0 && self.isMoveOperate(event)) {
                         isClickOnSvgView = self.isClickOnSvgView(event);
@@ -251,6 +254,77 @@ require(
                     self.endMoveView();
                 });
             },
+            getLinePoints: function(view, event, offset) {
+                var startPoint = this.getLineStart(view, event);
+                return [
+                    startPoint,
+                    {
+                        x: startPoint.x + offset.x,
+                        y: startPoint.y + offset.y
+                    }
+                ];
+            },
+            getLineStart: function(view, event) {
+                var index = parseInt($(event.target).attr("data-order"), 10),
+                    connectPoints = view.getConnectPoints(view[view.type + "Group"]);
+                return connectPoints[index];
+            },
+            createConnectLine: function(view, event, offset) {
+                var model,
+                    line,
+                    points = this.getLinePoints(view, event, offset),
+                    rect = C.utils.getPointsRectInfo(points);
+                model = this.lineCollections.create({
+                    width: rect.width,
+                    height: rect.height,
+                    centerX: rect.cx,
+                    centerY: rect.cy,
+                    points: points
+                });
+                line = new View.line({ model: model, viewId: C.utils.count() });
+                this.svg.add(line.render().svg);
+                return line;
+            },
+            updateConnectLine: function(line, view, offset) {
+                var points = line.model.get("points"),
+                    len = points.length;
+                points[len - 1].x += offset.x;
+                points[len - 1].y += offset.y;
+                line.model.set({ points: points });
+            },
+            setCreateLineEvents: function() {
+                var self = this,
+                    connectLine = null,
+                    selectedView = null,
+                    lastPos = null;
+                $(document).mousedown(function(event) {
+                    if (event.button == 0 && self.isClickOnCreateLine(event)) {
+                        selectedView = self.getSelectedViewByTarget(event);
+                        lastPos = {
+                            x: event.clientX,
+                            y: event.clientY
+                        };
+                    }
+                });
+                $(document).mousemove(function(event) {
+                    if (lastPos && selectedView) {
+                        var offset = {
+                            x: event.clientX - lastPos.x,
+                            y: event.clientY - lastPos.y
+                        };
+                        if (!connectLine) {
+                            connectLine = self.createConnectLine(selectedView, event, offset);
+                        } else {
+                            self.updateConnectLine(connectLine, selectedView, offset);
+                        }
+                    }
+                });
+                $(document).click(function(event) {
+                    connectLine = null;
+                    lastPos = null;
+                    selectedView = null;
+                });
+            },
             getClosestViewInfo: function(point, diff) {
                 var target = {},
                     hasFound = false;
@@ -287,7 +361,7 @@ require(
                     points = null,
                     order = 0;
                 $(document).mousedown(function(event) {
-                    if (event.button == 0 && !self.isMoveOperate(event)) {
+                    if (event.button == 0 && self.isClickOnResize(event)) {
                         selectedView = self.getSelectedViewByTarget(event);
                         points = selectedView.model.get("points");
                         order = parseInt(event.target.getAttribute("data-order")) || 0;
@@ -627,6 +701,7 @@ require(
                 this.setAddViewEvents();
                 this.setMoveEvents();
                 this.setResizeEvents();
+                this.setCreateLineEvents();
                 this.setSelectEvents();
             },
             setOtherEvents: function() {

@@ -198,7 +198,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             for (var i = 0, len = centerPoints.length; i < len; i++) {
                 box = centerPoints[i];
                 circle = group.circle(cornerWidth).center(box.x, box.y)
-                circle.fill("#999");
+                circle.fill("#999").attr("data-order", i);
             }
         },
         setPointGroupStatus: function(isShow) {
