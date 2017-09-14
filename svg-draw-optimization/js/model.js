@@ -31,6 +31,11 @@ define(["jquery", "underscore", "backbone", "svg"], function($, _, Backbone, SVG
                 strokeColor: "",
                 fullColor: "",
 
+                arrow: {
+                    start: 'line-no-arrow',
+                    end: 'line-with-arrow'
+                },
+
                 rotate: 0,
 
                 parentId: "",

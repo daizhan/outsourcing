@@ -11,47 +11,7 @@ require.config({
 require(
     ["jquery", "underscore", "backbone", "svg", "common", "attrs", "tools", "devices", "view", "model", "collection"],
     function($, _, Backbone, SVG, C, Attr, Tool, Device, View, Model, Collection) {
-        $(".color, .full-color, .stroke-color").click(function() {
-            var $target = $(this);
-            C.colorPicker.init($target, "000000", function(color) {
-                C.layer.topNotify("info", { content: "颜色值: #" + color, shade: false, time: 2 });
-            }, "triggerByTarget");
-        });
-        var data = {
-            type: "with-selected",
-            menus: [{
-                    operate: "copy",
-                    status: "selected",
-                    value: "",
-                    text: "复制",
-                    shortcut: "ctrl+c"
-                },
-                {
-                    operate: "copy",
-                    status: "disabled",
-                    value: "",
-                    text: "复制",
-                    shortcut: "ctrl+c"
-                },
-                {
-                    type: "separator"
-                },
-                {
-                    operate: "cut",
-                    status: "",
-                    value: "cut",
-                    text: "剪切",
-                    shortcut: "ctrl+x"
-                },
-                {
-                    operate: "page",
-                    status: "",
-                    value: "paste",
-                    text: "粘贴",
-                    shortcut: "ctrl+v"
-                }
-            ]
-        };
+
         var data1 = {
             type: "",
             menus: [{
@@ -87,13 +47,6 @@ require(
                 }
             ]
         };
-
-        $(".border-width, .border-style").click(function(event) {
-            var $target = $(this);
-            C.popupMenu.init($target, data, function(operate, value) {
-                C.layer.topNotify("info", { content: "operate: " + operate + "<br />value: " + value, shade: false, time: 2 });
-            }, "triggerByTarget");
-        });
 
         var AppView = View.base.extend({
 
@@ -457,11 +410,13 @@ require(
             },
 
             updateAttrBySelectedView: function() {
-                var types = [];
+                var types = [],
+                    ids = [];
                 this.selectedViews.forEach(function(view) {
                     types.push(view.type);
+                    ids.push(view.id);
                 });
-                this.attrView.trigger("showTypeAttr", { types: types });
+                this.attrView.trigger("showTypeAttr", { types: types, viewIds: ids });
             },
 
             selectView: function(view, isAppend) {
@@ -505,8 +460,8 @@ require(
             },
             setSelectEvents: function() {
                 var self = this,
-                    lastPos = null;
-                isSelecting = false,
+                    lastPos = null,
+                    isSelecting = false,
                     insideViews = [];
                 $(document).mousedown(function(event) {
                     if (event.button != 0) {
@@ -514,8 +469,10 @@ require(
                     }
                     var $target = $(event.target),
                         isClickOnAttrEle = self.isClickOnAttrEle(event),
+                        isClickOnPopup = self.isClickOnPopup(event),
+                        isClickOnPopup = self.isClickOnPopup(event),
                         selectedView = self.getSelectedViewByTarget(event);
-                    if (!isClickOnAttrEle && !selectedView) {
+                    if (!isClickOnAttrEle && !selectedView && !isClickOnPopup) {
                         if (self.selectedViews.length) {
                             self.removeSelectedView();
                         }

@@ -16,9 +16,6 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
 
         getSvgRoot: function(isSvgNode) {
             var svgRoot = this.svg.doc();
-            if (!svgRoot) {
-                svgRoot = SVG($(".draw-content")[0]);
-            }
             return svgRoot;
         },
         getMainContainerElem: function() {
@@ -107,6 +104,14 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         getCurrentStyle: function() {},
         setStyle: function() {},
 
+        isIncludeCurrentView: function(ids) {
+            ids = ids || [];
+            if (!~ids.indexOf(this.id)) {
+                return false;
+            }
+            return true;
+        },
+
         setFont: function(options) {
             C.layer.topNotify("info", { content: "set font " + options.value, shade: false, time: 2 });
         },
@@ -124,7 +129,15 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             C.layer.topNotify("info", { content: "set border color #" + options.value, shade: false, time: 2 });
         },
         setLinePoint: function(options) {
-            C.layer.topNotify("info", { content: "set line point " + options.value, shade: false, time: 2 });
+            var arrow = _.extend({}, this.model.get("arrow"));
+            if (this.isIncludeCurrentView(options.viewIds)) {
+                if (options.attr == "startArrow") {
+                    arrow.start = options.value;
+                } else {
+                    arrow.end = options.value;
+                }
+                this.model.set({ arrow: arrow });
+            }
         },
         setBorderWidth: function(options) {
             C.layer.topNotify("info", { content: "set border width" + options.value, shade: false, time: 2 });
@@ -423,19 +436,46 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             Array.prototype.splice.apply(points, ([1, 0]).concat(midPoints));
             return points;
         },
-        createArrow: function() {
-            var svgRoot = this.getSvgRoot();
-            if (this.arrow) {
-                return this.arrow;
+        createArrow: function(pos) {
+            var svgRoot = this.getSvgRoot(),
+                key = pos + "Arrow";
+            if (this[key]) {
+                return this[key];
             }
-            this.arrow = svgRoot.marker(10, 10, function(add) {
-                add.path("M 0 0 L 10 5 L 0 10 z");
-                this.attr({
-                    refX: 10,
-                    refY: 5
+            if (!svgRoot) {
+                return null;
+            }
+            if (pos == "end") {
+                this[key] = svgRoot.marker(10, 10, function(add) {
+                    add.path("M 0 0 L 10 5 L 0 10 z");
+                    this.attr({
+                        refX: 10,
+                        refY: 5
+                    });
                 });
+            } else {
+                this[key] = svgRoot.marker(10, 10, function(add) {
+                    add.path("M 0 5 L 10 0 L 10 10 z");
+                    this.attr({
+                        refX: 0,
+                        refY: 5
+                    });
+                });
+            }
+            return this[key];
+        },
+        setArrow: function(path) {
+            var self = this,
+                arrow = this.model.get("arrow"),
+                arrowPos = ["start", "end"];
+            arrowPos.forEach(function(pos) {
+                var marker = self.createArrow(pos);
+                if (!arrow[pos] || arrow[pos] == "line-no-arrow") {
+                    path.attr("marker-" + pos, null);
+                } else if (marker) {
+                    path.marker(pos, marker);
+                }
             });
-            return this.arrow;
         },
         create: function(pos, type) {
             var group = this.svg.group().addClass("svg-line-group"),
@@ -461,7 +501,8 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             path = group.path(d).attr({
                 stroke: this.defaultStyle.strokeColor,
                 fill: "transparent"
-            }).marker("end", this.createArrow());
+            });
+            this.setArrow(path);
         },
         render: function() {
             var data = this.model.toJSON();
