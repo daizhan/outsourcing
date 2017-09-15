@@ -408,15 +408,18 @@ require(
                 });
                 this.selectedViews = [];
             },
-
+            mergeStyle: function() {},
             updateAttrBySelectedView: function() {
                 var types = [],
-                    ids = [];
+                    ids = [],
+                    style = {},
+                    self = this;
                 this.selectedViews.forEach(function(view) {
                     types.push(view.type);
                     ids.push(view.id);
+                    style = self.mergeStyle(style, view.getStyle());
                 });
-                this.attrView.trigger("showTypeAttr", { types: types, viewIds: ids });
+                this.attrView.trigger("showTypeAttr", { types: types, viewIds: ids, style: style });
             },
 
             selectView: function(view, isAppend) {

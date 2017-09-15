@@ -100,8 +100,25 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             return svgText;
         },
 
-        getDefaultStyle: function() {},
-        getCurrentStyle: function() {},
+        getStyleList: function() {
+            var styles = [
+                "font", "fontSize", "textColor", "textBold", "textItalic",
+                "arrange",
+                "fillColor", "borderColor", "borderStyle", "borderWidth",
+                "startArrow", "endArrow",
+                "width", "height",
+            ];
+            return styles;
+        },
+        getDefaultStyle: function() {
+            return this.defaultStyle;
+        },
+        getStyle: function() {
+            var defaultStyle = this.getDefaultStyle(),
+                styleList = this.getStyleList(),
+                currentStyle = _.pick.apply(_, [this.model.toJSON()].concat(styleList));
+            return _.extend({}, defaultStyle, currentStyle);
+        },
         setStyle: function() {},
 
         isIncludeCurrentView: function(ids) {
@@ -129,14 +146,18 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             C.layer.topNotify("info", { content: "set border color #" + options.value, shade: false, time: 2 });
         },
         setLinePoint: function(options) {
-            var arrow = _.extend({}, this.model.get("arrow"));
+            var startArrow = _.extend({}, this.model.get("startArrow")),
+                endArrow = _.extend({}, this.model.get("startArrow"));
             if (this.isIncludeCurrentView(options.viewIds)) {
                 if (options.attr == "startArrow") {
-                    arrow.start = options.value;
+                    startArrow = options.value;
                 } else {
-                    arrow.end = options.value;
+                    endArrow = options.value;
                 }
-                this.model.set({ arrow: arrow });
+                this.model.set({
+                    startArrow: startArrow,
+                    endArrow: endArrow
+                });
             }
         },
         setBorderWidth: function(options) {
@@ -281,11 +302,14 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         className: "svg-line",
         type: "line",
         defaultStyle: {
-            strokeColor: "#333",
-        },
-        defaultSize: {
+            borderColor: "#333",
+            borderStyle: "solid",
+            borderWidth: 1,
+            fillColor: "transparent",
+            startArrow: "line-no-arrow",
+            endArrow: "line-width-arrow",
             width: 100,
-            height: 60
+            hight: 60,
         },
         init: function() {
             this.svg = new SVG.G().addClass(this.className);
@@ -355,8 +379,8 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         },
         getSize: function() {
             return {
-                width: this.model.get("width") || this.defaultSize.width,
-                height: this.model.get("height") || this.defaultSize.height
+                width: this.model.get("width") || this.defaultStyle.width,
+                height: this.model.get("height") || this.defaultStyle.height
             }
         },
         getLineDefaultPoints: function() {
@@ -466,11 +490,11 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         },
         setArrow: function(path) {
             var self = this,
-                arrow = this.model.get("arrow"),
                 arrowPos = ["start", "end"];
             arrowPos.forEach(function(pos) {
-                var marker = self.createArrow(pos);
-                if (!arrow[pos] || arrow[pos] == "line-no-arrow") {
+                var marker = self.createArrow(pos),
+                    arrow = self.model.get(pos + "Arrow");
+                if (!arrow || arrow == "line-no-arrow") {
                     path.attr("marker-" + pos, null);
                 } else if (marker) {
                     path.marker(pos, marker);
@@ -499,8 +523,8 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 fill: "transparent"
             });
             path = group.path(d).attr({
-                stroke: this.defaultStyle.strokeColor,
-                fill: "transparent"
+                stroke: this.defaultStyle.borderColor,
+                fill: this.defaultStyle.fillColor
             });
             this.setArrow(path);
         },
@@ -521,12 +545,15 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         className: "svg-rect",
         type: "rect",
         defaultStyle: {
-            fill: "#fff",
-            strokeColor: "#333",
+            font: "Microsoft Yahei",
             fontSize: 12,
-            color: "#666"
-        },
-        defaultSize: {
+            textColor: "#333",
+            textBold: false,
+            textItalic: false,
+            fillColor: "#fff",
+            borderColor: "#333",
+            borderStyle: "solid",
+            borderWidth: 1,
             width: 100,
             height: 60,
             radius: 4
@@ -567,24 +594,24 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         create: function(pos, type, text) {
             var group = this.svg.group().addClass("svg-rect-group"),
                 rect = null,
-                width = this.model.get("width") || this.defaultSize.width,
-                height = this.model.get("height") || this.defaultSize.height;
+                width = this.model.get("width") || this.defaultStyle.width,
+                height = this.model.get("height") || this.defaultStyle.height;
             this.rectGroup = group;
             rect = group.rect(width, height);
             rect.attr({
                 x: pos.x - width / 2,
                 y: pos.y - height / 2,
-                fill: this.defaultStyle.fill,
-                stroke: this.defaultStyle.strokeColor
+                fill: this.defaultStyle.fillColor,
+                stroke: this.defaultStyle.borderColor
             });
             if (type == "round-rect") {
-                rect.radius(this.defaultSize.radius);
+                rect.radius(this.defaultStyle.radius);
             }
             if (text) {
                 text = this.setSvgText(text, group)
                     .addClass("svg-rect-text")
                     .attr({
-                        fill: this.defaultStyle.color
+                        fill: this.defaultStyle.fillColor
                     }).leading(1);
                 text.center(pos.x, pos.y);
             }
@@ -607,15 +634,19 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         className: "svg-device",
         type: "device",
         defaultStyle: {
-            font: "Helvetica",
+            font: "Microsoft Yahei",
             fontSize: 12,
-            color: "#666"
+            textColor: "#333",
+            textBold: false,
+            textItalic: false,
+            fillColor: "#fff",
+            borderColor: "#333",
+            borderStyle: "solid",
+            borderWidth: 1,
+            width: 60,
+            height: 60,
         },
         iconPadding: 10,
-        defaultSize: {
-            width: 60,
-            height: 60
-        },
         init: function() {
             this.svg = new SVG.G().addClass(this.className);
             this.deviceGroup = null;
@@ -661,15 +692,15 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 img = null,
                 text = null,
                 box = null,
-                width = this.model.get("width") || this.defaultSize.width,
-                height = this.model.get("height") || this.defaultSize.height;
+                width = this.model.get("width") || this.defaultStyle.width,
+                height = this.model.get("height") || this.defaultStyle.height;
             deviceName = deviceName || "设置设备";
             text = group.text("" + deviceName)
                 .addClass("svg-device-id")
                 .font({
-                    fill: this.defaultStyle.color,
+                    fill: this.defaultStyle.fillColor,
                     family: this.defaultStyle.font,
-                    size: this.defaultStyle.size
+                    size: this.defaultStyle.fontSize
                 });
             box = text.rbox();
             text.attr({
