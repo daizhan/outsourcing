@@ -117,7 +117,10 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             var defaultStyle = this.getDefaultStyle(),
                 styleList = this.getStyleList(),
                 currentStyle = _.pick.apply(_, [this.model.toJSON()].concat(styleList));
-            return _.extend({}, defaultStyle, currentStyle);
+            _.each(currentStyle, function(value, key) {
+                currentStyle[key] = currentStyle[key] || defaultStyle[key] || "";
+            });
+            return _.extend({}, currentStyle);
         },
         setStyle: function() {},
 
@@ -143,21 +146,17 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             C.layer.topNotify("info", { content: "set fill color #" + options.value, shade: false, time: 2 });
         },
         setBorderColor: function(options) {
-            C.layer.topNotify("info", { content: "set border color #" + options.value, shade: false, time: 2 });
+            if (this.isIncludeCurrentView(options.viewIds)) {
+                var data = {};
+                data[options.attr] = options.value;
+                this.model.set(data);
+            }
         },
         setLinePoint: function(options) {
-            var startArrow = _.extend({}, this.model.get("startArrow")),
-                endArrow = _.extend({}, this.model.get("startArrow"));
             if (this.isIncludeCurrentView(options.viewIds)) {
-                if (options.attr == "startArrow") {
-                    startArrow = options.value;
-                } else {
-                    endArrow = options.value;
-                }
-                this.model.set({
-                    startArrow: startArrow,
-                    endArrow: endArrow
-                });
+                var data = {};
+                data[options.attr] = options.value;
+                this.model.set(data);
             }
         },
         setBorderWidth: function(options) {
@@ -378,10 +377,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             }
         },
         getSize: function() {
-            return {
-                width: this.model.get("width") || this.defaultStyle.width,
-                height: this.model.get("height") || this.defaultStyle.height
-            }
+            return _.pick(this.getStyle(), "width", "height");
         },
         getLineDefaultPoints: function() {
             var modelData = this.model.toJSON(),
@@ -507,7 +503,8 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 d = "",
                 path,
                 marker,
-                points = C.utils.parsePointInt(this.getPoints());
+                points = C.utils.parsePointInt(this.getPoints()),
+                style = this.getStyle();
             if (points.length > 2) {
                 d = "M " + points[0].x + " " + points[0].y +
                     " L " + points[1].x + " " + points[1].y +
@@ -523,8 +520,8 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 fill: "transparent"
             });
             path = group.path(d).attr({
-                stroke: this.defaultStyle.borderColor,
-                fill: this.defaultStyle.fillColor
+                stroke: style.borderColor,
+                fill: style.fillColor
             });
             this.setArrow(path);
         },

@@ -59,7 +59,7 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
                 textColor: {
                     className: "color",
                     value: "",
-                    default: "333",
+                    default: "#333",
                     available: false,
                     text: "字体颜色",
                 },
@@ -96,14 +96,14 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
                 fillColor: {
                     className: "fill-color",
                     value: "",
-                    default: "fff",
+                    default: "#fff",
                     available: false,
                     text: "填充色",
                 },
                 borderColor: {
                     className: "stroke-color",
                     value: "",
-                    default: "666",
+                    default: "#666",
                     available: false,
                     text: "边框色",
                 },
@@ -346,8 +346,10 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
                     attr.value = "";
                 } else if (self.selectedAttrs.indexOf(key) != -1) {
                     attr.available = true;
+                    attr.value = options.style[key] || attr.default || "";
                 } else if (self.commonAttrs.indexOf(key) == -1) {
                     attr.available = true;
+                    attr.value = options.style[key] || attr.default || "";
                 }
             });
             modelData.viewIds = options.viewIds || [];
@@ -490,8 +492,8 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
             var self = this,
                 color = this.model.get(attr),
                 value = color.value || color.default;
-            C.colorPicker.init($target, value, function(color) {
-                self.setAttr({ name: attr, value: color });
+            C.colorPicker.init($target, value ? value.slice(1) : "", function(color) {
+                self.setAttr({ name: attr, value: "#" + color });
             }, "triggerByTarget");
         },
         showLineArrowItems: function($target, attrName) {

@@ -408,7 +408,14 @@ require(
                 });
                 this.selectedViews = [];
             },
-            mergeStyle: function() {},
+            mergeStyle: function(styleTarget, styleSource) {
+                _.each(styleSource, function(value, key) {
+                    if (value != styleTarget[key]) {
+                        styleTarget[key] = "";
+                    }
+                });
+                return styleTarget;
+            },
             updateAttrBySelectedView: function() {
                 var types = [],
                     ids = [],

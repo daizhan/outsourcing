@@ -24,19 +24,19 @@ define(["jquery", "underscore", "backbone", "svg"], function($, _, Backbone, SVG
                 text: "",
                 font: "",
                 fontSize: 0,
-                textBold: false,
-                textItalic: false,
-                textColor: "#333",
+                textBold: "",
+                textItalic: "",
+                textColor: "",
 
                 arrange: "",
 
                 borderWidth: 1,
-                borderStyle: "solid",
-                borderColor: "#333",
-                fillColor: "#fff",
+                borderStyle: "",
+                borderColor: "",
+                fillColor: "",
 
-                startArrow: 'line-no-arrow',
-                endArrow: 'line-with-arrow',
+                startArrow: '',
+                endArrow: '',
 
                 rotate: 0,
 
