@@ -14,7 +14,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             };
         },
 
-        getSvgRoot: function(isSvgNode) {
+        getSvgRoot: function() {
             var svgRoot = this.svg.doc();
             return svgRoot;
         },
@@ -70,7 +70,6 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 },
                 boxWidth = svg.bbox().width,
                 svgText = svg.text(""),
-                svgTspan = null,
                 textBox = null,
                 lineText = [],
                 str = "",
@@ -229,8 +228,8 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             }
             this.pointGroup = group;
             for (var i = 0, len = centerPoints.length; i < len; i++) {
-                box = centerPoints[i];
-                circle = group.circle(cornerWidth).center(box.x, box.y)
+                var box = centerPoints[i];
+                circle = group.circle(cornerWidth).center(box.x, box.y);
                 circle.fill("#999").attr("data-order", i);
             }
         },
@@ -308,7 +307,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             startArrow: "line-no-arrow",
             endArrow: "line-width-arrow",
             width: 100,
-            hight: 60,
+            height: 60,
         },
         init: function() {
             this.svg = new SVG.G().addClass(this.className);
@@ -351,7 +350,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             }
             this.borderGroup = group;
             for (var i = 0, len = points.length; i < len; i++) {
-                box = points[i];
+                var box = points[i];
                 path = group.path(
                     "M " + (box.x - cornerWidth / 2) + " " + (box.y - cornerWidth / 2) +
                     "L " + (box.x + cornerWidth / 2) + " " + (box.y - cornerWidth / 2) +
@@ -360,7 +359,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                     "Z"
                 );
                 if (i == 0) {
-                    resizeClass = "svg-cursor-nwse";
+                    var resizeClass = "svg-cursor-nwse";
                 } else if (i == points.length - 1) {
                     resizeClass = "svg-cursor-nesw";
                 } else {
@@ -382,7 +381,8 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         getLineDefaultPoints: function() {
             var modelData = this.model.toJSON(),
                 size = this.getSize();
-            return [{
+            return [
+                {
                     x: modelData.centerX - size.width / 2,
                     y: modelData.centerY
                 },
@@ -395,7 +395,8 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         getPolylineDefaultPoints: function() {
             var modelData = this.model.toJSON(),
                 size = this.getSize();
-            return [{
+            return [
+                {
                     x: modelData.centerX - size.width / 2,
                     y: modelData.centerY - size.height / 2
                 },
@@ -458,6 +459,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         },
         createArrow: function(pos) {
             var svgRoot = this.getSvgRoot(),
+                style = this.getStyle(),
                 key = pos + "Arrow";
             if (this[key]) {
                 return this[key];
@@ -470,7 +472,8 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                     add.path("M 0 0 L 10 5 L 0 10 z");
                     this.attr({
                         refX: 10,
-                        refY: 5
+                        refY: 5,
+                        fill: style.borderColor
                     });
                 });
             } else {
@@ -478,11 +481,20 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                     add.path("M 0 5 L 10 0 L 10 10 z");
                     this.attr({
                         refX: 0,
-                        refY: 5
+                        refY: 5,
+                        fill: style.borderColor
                     });
                 });
             }
             return this[key];
+        },
+        updateArrow: function(pos){
+            var style = this.getStyle();
+            if (this[pos+"Arrow"]) {
+                this[pos+"Arrow"].attr({
+                    fill: style.borderColor
+                });
+            }
         },
         setArrow: function(path) {
             var self = this,
@@ -495,14 +507,13 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 } else if (marker) {
                     path.marker(pos, marker);
                 }
+                self.updateArrow(pos);
             });
         },
         create: function(pos, type) {
             var group = this.svg.group().addClass("svg-line-group"),
-                line = null,
                 d = "",
                 path,
-                marker,
                 points = C.utils.parsePointInt(this.getPoints()),
                 style = this.getStyle();
             if (points.length > 2) {
@@ -691,6 +702,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 box = null,
                 width = this.model.get("width") || this.defaultStyle.width,
                 height = this.model.get("height") || this.defaultStyle.height;
+
             deviceName = deviceName || "设置设备";
             text = group.text("" + deviceName)
                 .addClass("svg-device-id")
@@ -732,5 +744,5 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         rect: RectView,
         device: DeviceView,
 
-    }
+    };
 });

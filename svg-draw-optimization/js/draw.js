@@ -14,7 +14,8 @@ require(
 
         var data1 = {
             type: "",
-            menus: [{
+            menus: [
+                {
                     operate: "copy",
                     status: "selected",
                     value: "",
@@ -256,6 +257,7 @@ require(
             setCreateLineEvents: function() {
                 var self = this,
                     connectLine = null,
+                    selectedView = null,
                     lastPos = null;
                 $(document).mousedown(function(event) {
                     if (event.button == 0 && self.isClickOnCreateLine(event)) {
@@ -322,7 +324,8 @@ require(
             getResizeLineOffset: function(selectedView, order, type, points, pointOffset) {
                 if (order == 0 || (type == "polyline" && order == points.length) || (type == "line" && order == points.length - 1)) {
                     var index = type == "line" ? order : Math.max(order - 1, 0),
-                        viewInfo = this.getClosestViewInfo({
+                        viewInfo = this.getClosestViewInfo(
+                            {
                                 x: points[index].x + pointOffset.x,
                                 y: points[index].y + pointOffset.y
                             },
@@ -419,12 +422,16 @@ require(
             updateAttrBySelectedView: function() {
                 var types = [],
                     ids = [],
-                    style = {},
+                    style = null,
                     self = this;
                 this.selectedViews.forEach(function(view) {
                     types.push(view.type);
                     ids.push(view.id);
-                    style = self.mergeStyle(style, view.getStyle());
+                    if (!style) {
+                        style = view.getStyle();
+                    } else {
+                        style = self.mergeStyle(style, view.getStyle());
+                    }
                 });
                 this.attrView.trigger("showTypeAttr", { types: types, viewIds: ids, style: style });
             },
@@ -477,9 +484,7 @@ require(
                     if (event.button != 0) {
                         return;
                     }
-                    var $target = $(event.target),
-                        isClickOnAttrEle = self.isClickOnAttrEle(event),
-                        isClickOnPopup = self.isClickOnPopup(event),
+                    var isClickOnAttrEle = self.isClickOnAttrEle(event),
                         isClickOnPopup = self.isClickOnPopup(event),
                         selectedView = self.getSelectedViewByTarget(event);
                     if (!isClickOnAttrEle && !selectedView && !isClickOnPopup) {
@@ -594,8 +599,7 @@ require(
             },
             createItem: function(item, pos) {
                 var collection = this.getTypeItem(item),
-                    model = null,
-                    view = null;
+                    model = null;
                 if (!this.elemToBeAdd) {
                     model = collection.create({
                         centerX: pos.x,
@@ -697,7 +701,6 @@ require(
             renderGrid: function() {
                 var gap = 12,
                     box = this.svg.rbox(),
-                    start, end,
                     shadowColor = "#f2f2f2",
                     deepColor = "#ccc",
                     lineWidth = 1,
@@ -708,7 +711,7 @@ require(
                 } else {
                     this.bg = this.svg.group();
                 }
-                for (i = 0; i <= max; i += gap) {
+                for (var i = 0; i <= max; i += gap) {
                     if (i <= box.height) { // 横线
                         path = this.bg.path("M " + 0 + " " + i + " L " + box.width + " " + i);
                         if ((i / gap) % 4) {
@@ -788,12 +791,14 @@ require(
                     return;
                 }
             }
-        }
+        };
 
-        Draw.init({
+        Draw.init(
+            {
                 el: ".outer-container",
                 isEdit: true,
-                tools: [{
+                tools: [
+                    {
                         type: "rect",
                         name: "矩形"
                     },
@@ -810,11 +815,13 @@ require(
                         name: "折线"
                     },
                 ],
-                devices: [{
+                devices: [
+                    {
                         type: 2,
                         name: "接地设备",
                         src: "/imgs/2.svg",
-                        devices: [{
+                        devices: [
+                            {
                                 id: 1,
                                 name: "jack-1jack-1jack-1",
                                 available: true
