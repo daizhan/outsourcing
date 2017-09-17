@@ -42,7 +42,7 @@ define(["jquery", "underscore", "backbone", "svg"], function($, _, Backbone, SVG
 
                 parentId: "",
                 children: []
-            }
+            };
         },
 
         sync: function(method, model, options) {

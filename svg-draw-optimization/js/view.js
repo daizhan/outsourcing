@@ -119,9 +119,37 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             _.each(currentStyle, function(value, key) {
                 currentStyle[key] = currentStyle[key] || defaultStyle[key] || "";
             });
-            return _.extend({}, currentStyle);
+            return _.extend({}, defaultStyle, currentStyle);
         },
-        setStyle: function() {},
+        filterStyle: function() {
+            var style = this.getStyle();
+            if (style.borderStyle == "dot") {
+                style.borderStyle = "2, 2";
+            } else if (style.borderStyle == "dashed") {
+                style.borderStyle = "6, 6";
+            } else {
+                style.borderStyle = "none";
+            }
+            return style;
+        },
+        setStyle: function(elem) {
+            var style = this.filterStyle();
+            elem.attr({
+                stroke: style.borderColor,
+                "stroke-width": style.borderWidth,
+                "stroke-dasharray": style.borderStyle,
+                fill: this.type == "line" ? "none" : style.fillColor
+            });
+        },
+        setTextStyle: function(elem) {
+            var style = this.filterStyle();
+            elem.attr({
+                fill: style.textColor,
+                "font-family": style.font,
+                "font-size": style.fontSize + "px",
+                "font-style": style.textBold ? "bold" : (style.textItalic ? "italic" : "normal")
+            });
+        },
 
         isIncludeCurrentView: function(ids) {
             ids = ids || [];
@@ -132,17 +160,33 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         },
 
         setFont: function(options) {
-            C.layer.topNotify("info", { content: "set font " + options.value, shade: false, time: 2 });
+            if (this.isIncludeCurrentView(options.viewIds)) {
+                var data = {};
+                data[options.attr] = options.value;
+                this.model.set(data);
+            }
         },
         setFontSize: function(options) {
-            C.layer.topNotify("info", { content: "set font size" + options.value + "px", shade: false, time: 2 });
+            if (this.isIncludeCurrentView(options.viewIds)) {
+                var data = {};
+                data[options.attr] = options.value;
+                this.model.set(data);
+            }
         },
 
         setTextColor: function(options) {
-            C.layer.topNotify("info", { content: "set text color #" + options.value, shade: false, time: 2 });
+            if (this.isIncludeCurrentView(options.viewIds)) {
+                var data = {};
+                data[options.attr] = options.value;
+                this.model.set(data);
+            }
         },
         setFillColor: function(options) {
-            C.layer.topNotify("info", { content: "set fill color #" + options.value, shade: false, time: 2 });
+            if (this.isIncludeCurrentView(options.viewIds)) {
+                var data = {};
+                data[options.attr] = options.value;
+                this.model.set(data);
+            }
         },
         setBorderColor: function(options) {
             if (this.isIncludeCurrentView(options.viewIds)) {
@@ -159,10 +203,18 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             }
         },
         setBorderWidth: function(options) {
-            C.layer.topNotify("info", { content: "set border width" + options.value, shade: false, time: 2 });
+            if (this.isIncludeCurrentView(options.viewIds)) {
+                var data = {};
+                data[options.attr] = options.value;
+                this.model.set(data);
+            }
         },
         setBorderStyle: function(options) {
-            C.layer.topNotify("info", { content: "set border style " + options.value, shade: false, time: 2 });
+            if (this.isIncludeCurrentView(options.viewIds)) {
+                var data = {};
+                data[options.attr] = options.value;
+                this.model.set(data);
+            }
         },
 
         setArrange: function(options) {
@@ -305,7 +357,7 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             borderWidth: 1,
             fillColor: "transparent",
             startArrow: "line-no-arrow",
-            endArrow: "line-width-arrow",
+            endArrow: "line-with-arrow",
             width: 100,
             height: 60,
         },
@@ -498,10 +550,11 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         },
         setArrow: function(path) {
             var self = this,
-                arrowPos = ["start", "end"];
+                arrowPos = ["start", "end"],
+                style = this.getStyle();
             arrowPos.forEach(function(pos) {
                 var marker = self.createArrow(pos),
-                    arrow = self.model.get(pos + "Arrow");
+                    arrow = style[pos + "Arrow"];
                 if (!arrow || arrow == "line-no-arrow") {
                     path.attr("marker-" + pos, null);
                 } else if (marker) {
@@ -530,10 +583,8 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 "stroke-width": 5,
                 fill: "transparent"
             });
-            path = group.path(d).attr({
-                stroke: style.borderColor,
-                fill: style.fillColor
-            });
+            path = group.path(d);
+            this.setStyle(path);
             this.setArrow(path);
         },
         render: function() {
@@ -601,27 +652,26 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         },
         create: function(pos, type, text) {
             var group = this.svg.group().addClass("svg-rect-group"),
+                style = this.getStyle(),
                 rect = null,
-                width = this.model.get("width") || this.defaultStyle.width,
-                height = this.model.get("height") || this.defaultStyle.height;
+                width = style.width,
+                height = style.height;
             this.rectGroup = group;
             rect = group.rect(width, height);
             rect.attr({
                 x: pos.x - width / 2,
                 y: pos.y - height / 2,
-                fill: this.defaultStyle.fillColor,
-                stroke: this.defaultStyle.borderColor
             });
+            this.setStyle(rect);
             if (type == "round-rect") {
-                rect.radius(this.defaultStyle.radius);
+                rect.radius(style.radius);
             }
             if (text) {
                 text = this.setSvgText(text, group)
                     .addClass("svg-rect-text")
-                    .attr({
-                        fill: this.defaultStyle.fillColor
-                    }).leading(1);
+                    .leading(1);
                 text.center(pos.x, pos.y);
+                this.setTextStyle(text);
             }
         },
         render: function() {
@@ -697,20 +747,17 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         },
         create: function(pos, type, deviceName) {
             var group = this.svg.group().addClass("svg-device-group"),
+                style = this.getStyle(),
                 img = null,
                 text = null,
                 box = null,
-                width = this.model.get("width") || this.defaultStyle.width,
-                height = this.model.get("height") || this.defaultStyle.height;
+                width = style.width,
+                height = style.height;
 
             deviceName = deviceName || "设置设备";
             text = group.text("" + deviceName)
-                .addClass("svg-device-id")
-                .font({
-                    fill: this.defaultStyle.fillColor,
-                    family: this.defaultStyle.font,
-                    size: this.defaultStyle.fontSize
-                });
+                .addClass("svg-device-id");
+            this.setTextStyle(text);
             box = text.rbox();
             text.attr({
                 x: pos.x - box.width / 2,
