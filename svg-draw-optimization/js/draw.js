@@ -56,7 +56,9 @@ require(
                 this.$main = $("<div></div>").addClass("draw-container");
                 this.$el.append(this.$main);
 
+                this.root = null;
                 this.svg = null;
+                this.scale = 100;
                 this.bg = null;
                 this.selectTipsBox = null;
                 this.deviceView = null;
@@ -426,6 +428,11 @@ require(
                 });
                 return styleTarget;
             },
+            getGlobalStyle: function(){
+                return {
+                    scale: this.scale
+                };
+            },
             updateAttrBySelectedView: function() {
                 var types = [],
                     ids = [],
@@ -440,6 +447,7 @@ require(
                         style = self.mergeStyle(style, view.getStyle());
                     }
                 });
+                style = _.extend(style, this.getGlobalStyle());
                 this.attrView.trigger("showTypeAttr", { types: types, viewIds: ids, style: style });
             },
 
@@ -498,7 +506,7 @@ require(
                         if (self.selectedViews.length) {
                             self.removeSelectedView();
                         }
-                        self.attrView.trigger("showTypeAttr");
+                        self.attrView.trigger("showTypeAttr", {style: self.getGlobalStyle()});
                         if (self.isClickOnDraw(event)) {
                             isSelecting = true;
                             lastPos = {
@@ -702,12 +710,14 @@ require(
                 this.listenTo(Backbone, "setScale", this.scaleSvg);
             },
             scaleSvg: function(options) {
-                C.layer.topNotify("info", { content: "scale page " + options.value + "%", shade: false, time: 2 });
+                this.scale = options.value;
+                var scale = options.value / 100;
+                this.svg.transform({scale: scale});
             },
 
             renderGrid: function() {
                 var gap = 12,
-                    box = this.svg.rbox(),
+                    box = this.root.rbox(),
                     shadowColor = "#f2f2f2",
                     deepColor = "#ccc",
                     lineWidth = 1,
@@ -716,7 +726,7 @@ require(
                 if (this.bg) {
                     this.bg.clear();
                 } else {
-                    this.bg = this.svg.group();
+                    this.bg = this.root.group();
                 }
                 for (var i = 0; i <= max; i += gap) {
                     if (i <= box.height) { // 横线
@@ -742,8 +752,9 @@ require(
             render: function(data) {
                 var $elem = $("<div></div>").addClass("draw-content");
                 this.$main.append($elem.attr("id", "svg-wrapper"));
-                this.svg = SVG($elem[0]).size("100%", "100%");
+                this.root = SVG($elem[0]).size("100%", "100%");
                 this.renderGrid();
+                this.svg = this.root.group();
             },
             setRightBtnMenu: function() {
                 $(document).contextmenu(function(event) {

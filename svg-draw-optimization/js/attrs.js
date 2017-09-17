@@ -26,7 +26,7 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
                     default: 100,
                     available: true,
                     list: [
-                        200, 150, 125, 110, 100, 90, 75, 50, 25
+                        500, 300, 200, 150, 125, 110, 100, 90, 75, 50
                     ],
                     text: "缩放",
                 },
@@ -219,7 +219,8 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
             rect: ["startArrow", "endArrow"],
             device: ["fillColor", "borderColor", "borderStyle", "borderWidth", "startArrow", "endArrow"]
         },
-        categories: [{
+        categories: [
+            {
                 name: "recovery",
                 attrs: ["undo", "redo", "formatBrush", "scale"]
             },
@@ -247,8 +248,6 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
         tagName: "div",
         className: "top-attrs",
         initialize: function() {
-            var self = this;
-
             this.listenTo(this.model, "sync", this.render);
             this.on({
                 "showTypeAttr": this.showTypeAttr
@@ -323,15 +322,23 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
 
         // events
         showTypeAttr: function(options) {
-            var self = this;
-            options = options || {};
-            if (!Array.isArray(options.types) || !options.types.length) {
-                this.model.save(this.model.defaults());
-                return;
-            }
             var self = this,
                 disabledAttr = [],
                 modelData = this.model.toJSON();
+            options = options || {};
+            // 默认情况
+            if (!Array.isArray(options.types) || !options.types.length) {
+                modelData = this.model.defaults();
+                options.style = options.style || {};
+                _.each(modelData, function(attr, key) {
+                    if (attr.available) {
+                        attr.value = options.style[key] || attr.default || "";
+                    }
+                });
+                modelData.viewIds = options.viewIds || [];
+                this.model.save(modelData);
+                return;
+            }
             options.types.forEach(function(type, index) {
                 var attrs = self.svgElemDisabledAttrs[type] || [];
                 if (index != 0) {
@@ -369,8 +376,8 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
             Backbone.trigger("set" + options.name[0].toUpperCase() + options.name.slice(1), { attr: options.name, value: value, viewIds: ids });
         },
         getProperFontSizeValue: function(value) {
-            var fontSize = this.model.get("fontSize"),
-                value = parseInt(value, 10);
+            var fontSize = this.model.get("fontSize");
+            value = parseInt(value, 10);
             if (!value) {
                 value = fontSize.default;
             } else if (value < fontSize.min) {
@@ -409,8 +416,8 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
             });
         },
         getProperScaleValue: function(value) {
-            var scale = this.model.get("scale"),
-                value = parseInt(value);
+            var scale = this.model.get("scale");
+            value = parseInt(value);
             if (!value) {
                 value = scale.default;
             }
@@ -618,12 +625,12 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
                 this.showBorderWidthItems($target);
             } else if (attr == "arrange") {
                 this.showArrangeItems($target);
-            } else {}
+            }
         },
     });
 
     return {
         view: attrView,
         model: attrModel
-    }
+    };
 });
