@@ -588,10 +588,9 @@ textarea {
 
 .draw-container .draw-content {
     height: 700px;
-    width: inherit;
+    width: 1160px;
     overflow: hidden;
     position: relative;
-    overflow: auto;
     margin-left: -1px;
     margin-top: -1px;
     border: 1px solid #d7d7d7;
@@ -600,10 +599,10 @@ textarea {
 
 .draw-container.can-edit .draw-content {
     margin-bottom: 100px;
+    padding: 20px;
 }
 
 #svg-wrapper svg {
-    margin: 20px;
     background: #fff;
 }
 
