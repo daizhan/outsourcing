@@ -41,7 +41,7 @@ define(["jquery"], function($) {
         // 根据给定点，计算最小包含矩形的四个点，按照顺时针顺序返回点集
         getRectPoints: function(points) {
             var xValues = points.map(function(item) { return item.x; }),
-                yValues = points.map(function(item) { return item.x; }),
+                yValues = points.map(function(item) { return item.y; }),
                 minX = Math.min.apply(Math, xValues),
                 minY = Math.min.apply(Math, yValues),
                 maxX = Math.max.apply(Math, xValues),
@@ -52,11 +52,6 @@ define(["jquery"], function($) {
                 { x: maxX, y: maxY },
                 { x: minX, y: maxY }
             ];
-        },
-        rectCoordCompare: function(rectA, rectB) {
-            return {
-                upperX: rect
-            };
         },
         // is big contain small
         isRectContain: function(bigRect, smallRect) {
@@ -108,7 +103,7 @@ define(["jquery"], function($) {
             var offset = {
                 x: currPos.x - lastPos.x,
                 y: currPos.y - lastPos.y
-            }
+            };
             if (index == 1) {
                 offset.x = -offset.x;
                 offset.y = -offset.y;
@@ -193,6 +188,38 @@ define(["jquery"], function($) {
             }
             return points;
         },
+        minDisToRect: function(point, points){
+            var rect = this.getRectPoints(points);
+            // 矩形内部
+            if (point.x >= rect[0].x && point.x <= rect[2].x && point.y >= rect[0].y && point.y <= rect[2].y) {
+                return Math.min(
+                    Math.abs(point.x-rect[0].x),
+                    Math.abs(point.y-rect[0].y),
+                    Math.abs(point.x-rect[2].x),
+                    Math.abs(point.y-rect[2].y)
+                );
+            } else if (point.x >= rect[0].x && point.x <= rect[2].x) { // x 轴区间内
+                return Math.min(
+                    Math.abs(point.y-rect[0].y),
+                    Math.abs(point.y-rect[2].y)
+                );
+            } else if (point.y >= rect[0].y && point.y <= rect[2].y) { // y 轴区间内
+                return Math.min(
+                    Math.abs(point.x-rect[0].x),
+                    Math.abs(point.x-rect[2].x)
+                );
+            } else {
+                var minDis = -1,
+                    self = this;
+                rect.forEach(function(item){
+                    var dis = self.distance(item, point);
+                    if (minDis == -1 || dis < minDis) {
+                        minDis = dis;
+                    }
+                });
+                return minDis;
+            }
+        },
         deepCopy: function(obj) {
             var newObj = null;
             if (Array.isArray(obj)) {
@@ -216,5 +243,5 @@ define(["jquery"], function($) {
             }
             return newObj;
         }
-    }
+    };
 });

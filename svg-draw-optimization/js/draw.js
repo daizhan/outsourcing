@@ -302,18 +302,24 @@ require(
                     }
                     if (view.type == "rect" || view.type == "device") {
                         var connectPoints = view.getConnectPoints(view[view.type + "Group"]);
-                        for (var i = 0; i < connectPoints.length; i++) {
-                            var dis = C.utils.distance(point, connectPoints[i]);
-                            if (!target.minDis || dis < target.minDis) {
-                                target.minDis = dis;
-                                target.point = connectPoints[i];
-                                target.view = view;
+                        var minRectDis = C.utils.minDisToRect(point, connectPoints);
+                        if (!target.minRectDis || minRectDis < target.minRectDis) {
+                            target.point = null;
+                            target.minDis = null;
+                            target.minRectDis = minRectDis;
+                            target.view = view;
+                            for (var i = 0; i < connectPoints.length; i++) {
+                                var dis = C.utils.distance(point, connectPoints[i]);
+                                if (!target.minDis || dis < target.minDis) {
+                                    target.minDis = dis;
+                                    target.point = connectPoints[i];
+                                }
                             }
                         }
                     }
                 });
                 if (diff) {
-                    if (target.minDis <= diff) {
+                    if (target.minRectDis <= diff) {
                         return target;
                     } else {
                         return {};
@@ -356,11 +362,12 @@ require(
                 $(document).mousedown(function(event) {
                     if (event.button == 0 && self.isClickOnResize(event)) {
                         selectedView = self.getSelectedViewByTarget(event);
+                        var style = selectedView.getStyle();
                         points = selectedView.model.get("points");
                         order = parseInt(event.target.getAttribute("data-order")) || 0;
                         size = {
-                            width: selectedView.model.get("width") || selectedView.defaultSize.width,
-                            height: selectedView.model.get("height") || selectedView.defaultSize.height,
+                            width: style.width,
+                            height: style.height,
                             centerX: selectedView.model.get("centerX"),
                             centerY: selectedView.model.get("centerY"),
                         };
