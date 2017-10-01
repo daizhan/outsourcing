@@ -11,50 +11,11 @@ require.config({
 require(
     ["jquery", "underscore", "backbone", "svg", "common", "attrs", "tools", "devices", "view", "model", "collection"],
     function($, _, Backbone, SVG, C, Attr, Tool, Device, View, Model, Collection) {
-        $(".color, .full-color, .stroke-color").click(function() {
-            var $target = $(this);
-            C.colorPicker.init($target, "000000", function(color) {
-                C.layer.topNotify("info", { content: "颜色值: #" + color, shade: false, time: 2 });
-            }, "triggerByTarget");
-        });
-        var data = {
-            type: "with-selected",
-            menus: [{
-                    operate: "copy",
-                    status: "selected",
-                    value: "",
-                    text: "复制",
-                    shortcut: "ctrl+c"
-                },
-                {
-                    operate: "copy",
-                    status: "disabled",
-                    value: "",
-                    text: "复制",
-                    shortcut: "ctrl+c"
-                },
-                {
-                    type: "separator"
-                },
-                {
-                    operate: "cut",
-                    status: "",
-                    value: "cut",
-                    text: "剪切",
-                    shortcut: "ctrl+x"
-                },
-                {
-                    operate: "page",
-                    status: "",
-                    value: "paste",
-                    text: "粘贴",
-                    shortcut: "ctrl+v"
-                }
-            ]
-        };
+
         var data1 = {
             type: "",
-            menus: [{
+            menus: [
+                {
                     operate: "copy",
                     status: "selected",
                     value: "",
@@ -87,13 +48,6 @@ require(
                 }
             ]
         };
-
-        $(".border-width, .border-style").click(function(event) {
-            var $target = $(this);
-            C.popupMenu.init($target, data, function(operate, value) {
-                C.layer.topNotify("info", { content: "operate: " + operate + "<br />value: " + value, shade: false, time: 2 });
-            }, "triggerByTarget");
-        });
 
         var AppView = View.base.extend({
 
@@ -102,7 +56,9 @@ require(
                 this.$main = $("<div></div>").addClass("draw-container");
                 this.$el.append(this.$main);
 
+                this.root = null;
                 this.svg = null;
+                this.scale = 100;
                 this.bg = null;
                 this.selectTipsBox = null;
                 this.deviceView = null;
@@ -142,7 +98,7 @@ require(
                 this.setBodyEvents();
             },
 
-            getSelectedViewByTarget: function(event){
+            getSelectedViewByTarget: function(event) {
                 var className = "svg-view",
                     $target = $(event.target),
                     id = 0;
@@ -157,56 +113,59 @@ require(
                 }
                 return null;
             },
-            isMoveOperate: function(event){
-                var className = "svg-group-border",
-                    $target = $(event.target);
-                if ($target.hasClass(className) || $target.parents("." + className).length) {
-                    return false;
-                }
-                return true;
+            isClickOnCreateLine: function(event) {
+                var className = "svg-group-points";
+                return this.isClickOnEle(event, className);
             },
-            isClickOnEle: function(event, className){
+            isClickOnResize: function(event) {
+                var className = "svg-group-border";
+                return this.isClickOnEle(event, className);
+            },
+            isMoveOperate: function(event) {
+                return !this.isClickOnResize(event) && !this.isClickOnCreateLine(event);
+            },
+            isClickOnEle: function(event, className) {
                 var $target = $(event.target);
                 if ($target.hasClass(className) || $target.parents("." + className).length) {
                     return true;
                 }
                 return false;
             },
-            isClickOnSvgView: function(event){
+            isClickOnSvgView: function(event) {
                 return this.isClickOnEle(event, "svg-view");
             },
-            isClickOnAttrEle: function(event){
+            isClickOnAttrEle: function(event) {
                 return this.isClickOnEle(event, "top-attrs");
             },
-            isClickOnPopup: function(event){
+            isClickOnPopup: function(event) {
                 return this.isClickOnEle(event, "common-popup-block");
             },
-            isClickOnDraw: function(event){
+            isClickOnDraw: function(event) {
                 return this.isClickOnEle(event, "draw-content");
             },
-            isClickOnTool: function(event){
+            isClickOnTool: function(event) {
                 return this.isClickOnEle(event, "left-tools");
             },
-            isClickOnDevice: function(event){
+            isClickOnDevice: function(event) {
                 return this.isClickOnEle(event, "bottom-icons");
             },
-            getClickAttr: function(event){},
+            getClickAttr: function(event) {},
 
-            moveView: function(offset){
-                this.selectedViews.forEach(function(view){
+            moveView: function(offset) {
+                this.selectedViews.forEach(function(view) {
                     view.trigger("move", offset);
                 });
             },
-            endMoveView: function(){
-                this.selectedViews.forEach(function(view){
+            endMoveView: function() {
+                this.selectedViews.forEach(function(view) {
                     view.trigger("moveEnd");
                 });
             },
-            setMoveEvents: function(){
+            setMoveEvents: function() {
                 var self = this,
-                    isClickOnSvgView = false;
+                    isClickOnSvgView = false,
                     lastPos = null;
-                $(document).mousedown(function(event){
+                $(document).mousedown(function(event) {
                     if (event.button == 0 && self.isMoveOperate(event)) {
                         isClickOnSvgView = self.isClickOnSvgView(event);
                         lastPos = {
@@ -215,7 +174,7 @@ require(
                         };
                     }
                 });
-                $(document).mousemove(function(event){
+                $(document).mousemove(function(event) {
                     if (lastPos && isClickOnSvgView) {
                         var offset = {
                             x: event.clientX - lastPos.x,
@@ -228,16 +187,16 @@ require(
                         self.moveView(offset);
                     }
                 });
-                $(document).click(function(event){
+                $(document).click(function(event) {
                     if (lastPos && isClickOnSvgView) {
                         self.endMoveView();
                     }
                     lastPos = null;
                     isClickOnSvgView = false;
                 });
-                $(document).keydown(function(event){
+                $(document).keydown(function(event) {
                     var key = event.key || event.keyCode,
-                        offset = {x: 0, y: 0};
+                        offset = { x: 0, y: 0 };
                     if (key == "ArrowUp" || key == 38) {
                         offset.y -= 1;
                     } else if (key == "ArrowDown" || key == 40) { // down
@@ -251,22 +210,166 @@ require(
                     self.endMoveView();
                 });
             },
-
-            setResizeEvents: function(){
+            getLinePoints: function(view, event, offset) {
+                var startPoint = this.getLineStart(view, event);
+                return [
+                    startPoint,
+                    {
+                        x: startPoint.x + offset.x,
+                        y: startPoint.y + offset.y
+                    }
+                ];
+            },
+            getLineStart: function(view, event) {
+                var index = parseInt($(event.target).attr("data-order"), 10),
+                    connectPoints = view.getConnectPoints(view[view.type + "Group"]);
+                return connectPoints[index];
+            },
+            createConnectLine: function(view, event, offset) {
+                var model,
+                    line,
+                    points = this.getLinePoints(view, event, offset),
+                    rect = C.utils.getPointsRectInfo(points);
+                model = this.lineCollections.create({
+                    type: "tool",
+                    value: "line",
+                    width: rect.width,
+                    height: rect.height,
+                    centerX: rect.cx,
+                    centerY: rect.cy,
+                    points: points
+                });
+                line = new View.line({ model: model, viewId: C.utils.count() });
+                this.svg.add(line.render().svg);
+                this.addSubView(line);
+                return line;
+            },
+            updateConnectLine: function(line, view, offset) {
+                var points = line.model.get("points"),
+                    len = points.length;
+                offset = this.getResizeLineOffset(
+                    line,
+                    len > 2 ? len : len - 1,
+                    line.model.get("value"),
+                    points,
+                    offset
+                );
+                line.trigger("resize", offset);
+            },
+            setCreateLineEvents: function() {
+                var self = this,
+                    connectLine = null,
+                    selectedView = null,
+                    lastPos = null;
+                $(document).mousedown(function(event) {
+                    if (event.button == 0 && self.isClickOnCreateLine(event)) {
+                        selectedView = self.getSelectedViewByTarget(event);
+                        lastPos = {
+                            x: event.clientX,
+                            y: event.clientY
+                        };
+                    }
+                });
+                $(document).mousemove(function(event) {
+                    if (lastPos && selectedView) {
+                        var offset = {
+                            x: event.clientX - lastPos.x,
+                            y: event.clientY - lastPos.y
+                        };
+                        if (!connectLine) {
+                            connectLine = self.createConnectLine(selectedView, event, offset);
+                        } else {
+                            self.updateConnectLine(connectLine, selectedView, offset);
+                        }
+                        lastPos = {
+                            x: event.clientX,
+                            y: event.clientY
+                        };
+                    }
+                });
+                $(document).mouseup(function(event) {
+                    if (connectLine) {
+                        Backbone.trigger("lineClose", {});
+                    }
+                    connectLine = null;
+                    lastPos = null;
+                });
+            },
+            getClosestViewInfo: function(point, diff) {
+                var target = {},
+                    hasFound = false;
+                _.each(this.subViews, function(view) {
+                    if (hasFound) {
+                        return;
+                    }
+                    if (view.type == "rect" || view.type == "device") {
+                        var connectPoints = view.getConnectPoints(view[view.type + "Group"]);
+                        var minRectDis = C.utils.minDisToRect(point, connectPoints);
+                        if (!target.minRectDis || minRectDis < target.minRectDis) {
+                            target.point = null;
+                            target.minDis = null;
+                            target.minRectDis = minRectDis;
+                            target.view = view;
+                            for (var i = 0; i < connectPoints.length; i++) {
+                                var dis = C.utils.distance(point, connectPoints[i]);
+                                if (!target.minDis || dis < target.minDis) {
+                                    target.minDis = dis;
+                                    target.point = connectPoints[i];
+                                }
+                            }
+                        }
+                    }
+                });
+                if (diff) {
+                    if (target.minRectDis <= diff) {
+                        return target;
+                    } else {
+                        return {};
+                    }
+                }
+                return target;
+            },
+            getResizeLineOffset: function(selectedView, order, type, points, pointOffset) {
+                if (order == 0 || (type == "polyline" && order == points.length) || (type == "line" && order == points.length - 1)) {
+                    var index = type == "line" ? order : Math.max(order - 1, 0),
+                        viewInfo = this.getClosestViewInfo(
+                            {
+                                x: points[index].x + pointOffset.x,
+                                y: points[index].y + pointOffset.y
+                            },
+                            selectedView.closeDis
+                        );
+                    if (viewInfo.view) {
+                        Backbone.trigger("lineClose", { id: viewInfo.view.id });
+                        if (viewInfo.minDis <= selectedView.connectDis) {
+                            pointOffset = {
+                                x: viewInfo.point.x - points[index].x,
+                                y: viewInfo.point.y - points[index].y
+                            };
+                            viewInfo.isConnected = true;
+                        }
+                    } else {
+                        Backbone.trigger("lineClose", {});
+                    }
+                }
+                return _.extend({ points: C.utils.deepCopy(points), order: order }, pointOffset, viewInfo);
+            },
+            setResizeEvents: function() {
                 var self = this,
                     selectedView = null,
                     lastPos = null,
                     size = null,
                     points = null,
                     order = 0;
-                $(document).mousedown(function(event){
-                    if (event.button == 0 && !self.isMoveOperate(event)) {
+                $(document).mousedown(function(event) {
+                    if (event.button == 0 && self.isClickOnResize(event)) {
                         selectedView = self.getSelectedViewByTarget(event);
+                        var style = selectedView.getStyle();
                         points = selectedView.model.get("points");
-                        order = event.target.getAttribute("data-order") || 0;
+                        order = parseInt(event.target.getAttribute("data-order")) || 0;
                         size = {
-                            width: selectedView.model.get("width") || selectedView.defaultSize.width,
-                            height: selectedView.model.get("height") || selectedView.defaultSize.height,
+                            width: style.width,
+                            height: style.height,
                             centerX: selectedView.model.get("centerX"),
                             centerY: selectedView.model.get("centerY"),
                         };
@@ -278,23 +381,32 @@ require(
                         };
                     }
                 });
-                $(document).mousemove(function(event){
+                $(document).mousemove(function(event) {
                     if (selectedView && lastPos && size) {
                         var type = selectedView.model.get("value"),
-                            scaleOffset = C.utils.getScaleOffset(parseInt(order), lastPos, { x: event.clientX, y: event.clientY });
-                        var offset = {
-                            width: size.width + scaleOffset.x,
-                            height: size.height + scaleOffset.y,
-                            centerX: size.centerX + (event.clientX - lastPos.x)/2,
-                            centerY: size.centerY + (event.clientY - lastPos.y)/2,
-                        };
+                            pointOffset = {
+                                x: event.clientX - lastPos.x,
+                                y: event.clientY - lastPos.y
+                            },
+                            offset, scaleOffset;
                         if (type == "line" || type == "polyline") {
-                            offset.points = points;
+                            offset = self.getResizeLineOffset(selectedView, order, type, points, pointOffset);
+                        } else {
+                            scaleOffset = C.utils.getScaleOffset(order, lastPos, { x: event.clientX, y: event.clientY });
+                            offset = {
+                                width: size.width + scaleOffset.x,
+                                height: size.height + scaleOffset.y,
+                                centerX: size.centerX + pointOffset.x / 2,
+                                centerY: size.centerY + pointOffset.y / 2,
+                            };
                         }
                         selectedView.trigger("resize", offset);
                     }
                 });
-                $(document).mouseup(function(event){
+                $(document).mouseup(function(event) {
+                    if (selectedView) {
+                        Backbone.trigger("lineClose", {});
+                    }
                     lastPos = null;
                     selectedView = null;
                     order = 0;
@@ -303,21 +415,43 @@ require(
             },
 
             removeSelectedView: function() {
-                this.selectedViews.forEach(function(view){
+                this.selectedViews.forEach(function(view) {
                     view.trigger("removeSelected");
                 });
                 this.selectedViews = [];
             },
-
-            updateAttrBySelectedView: function(){
-                var types = [];
-                this.selectedViews.forEach(function(view){
-                    types.push(view.type);
+            mergeStyle: function(styleTarget, styleSource) {
+                _.each(styleSource, function(value, key) {
+                    if (value != styleTarget[key]) {
+                        styleTarget[key] = "";
+                    }
                 });
-                this.attrView.trigger("showTypeAttr", {types: types});
+                return styleTarget;
+            },
+            getGlobalStyle: function(){
+                return {
+                    scale: this.scale
+                };
+            },
+            updateAttrBySelectedView: function() {
+                var types = [],
+                    ids = [],
+                    style = null,
+                    self = this;
+                this.selectedViews.forEach(function(view) {
+                    types.push(view.type);
+                    ids.push(view.id);
+                    if (!style) {
+                        style = view.getStyle();
+                    } else {
+                        style = self.mergeStyle(style, view.getStyle());
+                    }
+                });
+                style = _.extend(style, this.getGlobalStyle());
+                this.attrView.trigger("showTypeAttr", { types: types, viewIds: ids, style: style });
             },
 
-            selectView: function(view, isAppend){
+            selectView: function(view, isAppend) {
                 if (!isAppend) {
                     var index = this.selectedViews.indexOf(view);
                     if (!!~index) {
@@ -338,13 +472,13 @@ require(
                 }
                 this.updateAttrBySelectedView();
             },
-            getInsideView: function(area){
+            getInsideView: function(area) {
                 var views = [];
-                _.each(this.subViews, function(view){
+                _.each(this.subViews, function(view) {
                     var box = view.svg.bbox(),
                         rect = [
-                            {x: box.x, y: box.y},
-                            {x: box.x2, y: box.y2},
+                            { x: box.x, y: box.y },
+                            { x: box.x2, y: box.y2 },
                         ];
                     if (view.type == "line") {
                         if (C.utils.isRectContain(area, rect)) {
@@ -356,23 +490,23 @@ require(
                 });
                 return views;
             },
-            setSelectEvents: function(){
+            setSelectEvents: function() {
                 var self = this,
-                    lastPos = null;
+                    lastPos = null,
                     isSelecting = false,
                     insideViews = [];
-                $(document).mousedown(function(event){
+                $(document).mousedown(function(event) {
                     if (event.button != 0) {
                         return;
                     }
-                    var $target = $(event.target),
-                        isClickOnAttrEle = self.isClickOnAttrEle(event),
+                    var isClickOnAttrEle = self.isClickOnAttrEle(event),
+                        isClickOnPopup = self.isClickOnPopup(event),
                         selectedView = self.getSelectedViewByTarget(event);
-                    if (!isClickOnAttrEle && !selectedView) {
+                    if (!isClickOnAttrEle && !selectedView && !isClickOnPopup) {
                         if (self.selectedViews.length) {
                             self.removeSelectedView();
                         }
-                        self.attrView.trigger("showTypeAttr");
+                        self.attrView.trigger("showTypeAttr", {style: self.getGlobalStyle()});
                         if (self.isClickOnDraw(event)) {
                             isSelecting = true;
                             lastPos = {
@@ -384,7 +518,7 @@ require(
                         self.selectView(selectedView, event.ctrlKey);
                     }
                 });
-                $(document).mousemove(function(event){
+                $(document).mousemove(function(event) {
                     if (isSelecting && lastPos) {
                         if (!self.selectTipsBox) {
                             self.selectTipsBox = self.svg.group().addClass("svg-select-tips");
@@ -394,9 +528,9 @@ require(
                                 x: event.clientX,
                                 y: event.clientY
                             }),
-                            rectPoints = C.utils.getRectPoints(startPos, endPos);
+                            rectPoints = C.utils.getRectPoints([startPos, endPos]);
                         self.selectTipsBox.clear();
-                        self.selectTipsBox.rect(Math.abs(endPos.x - startPos.x), Math.abs(endPos.y-startPos.y))
+                        self.selectTipsBox.rect(Math.abs(endPos.x - startPos.x), Math.abs(endPos.y - startPos.y))
                             .attr({
                                 x: parseInt(rectPoints[0].x) + 0.5,
                                 y: parseInt(rectPoints[0].y) + 0.5
@@ -406,7 +540,7 @@ require(
                         insideViews = self.getInsideView([rectPoints[0], rectPoints[2]]);
                     }
                 });
-                $(document).mouseup(function(event){
+                $(document).mouseup(function(event) {
                     isSelecting = false;
                     lastPos = null;
                     if (self.selectTipsBox) {
@@ -414,7 +548,7 @@ require(
                     }
                     self.selectTipsBox = null;
                     if (insideViews.length) {
-                        insideViews.forEach(function(view){
+                        insideViews.forEach(function(view) {
                             self.selectedViews.push(view);
                             view.trigger("setSelected");
                         });
@@ -427,7 +561,7 @@ require(
                 this.clearItemToBeAdd();
                 this.itemToBeAdd = _.extend({}, data);
             },
-            clearItemToBeAdd: function(){
+            clearItemToBeAdd: function() {
                 if (this.elemToBeAdd) {
                     this.elemToBeAdd = null;
                 }
@@ -446,9 +580,9 @@ require(
             showItemToBeAdd: function(event) {
                 var pos = this.getMousePos(event),
                     model = this.createItem(this.itemToBeAdd, pos);
-                this.createItemView(model, {isToBeAdd: true});
+                this.createItemView(model, { isToBeAdd: true });
             },
-            removeItemView: function(){
+            removeItemView: function() {
                 if (this.elemToBeAdd) {
                     var collection = this.getTypeItem(this.elemToBeAdd.model.toJSON());
                     collection.remove(this.elemToBeAdd.model);
@@ -463,7 +597,7 @@ require(
                         this.removeItemView();
                     } else {
                         model = this.createItem(this.itemToBeAdd, pos);
-                        this.createItemView(model, {isToBeAdd: false});
+                        this.createItemView(model, { isToBeAdd: false });
                     }
                     this.clearSelectedItem();
                 }
@@ -480,8 +614,7 @@ require(
             },
             createItem: function(item, pos) {
                 var collection = this.getTypeItem(item),
-                    model = null,
-                    view = null;
+                    model = null;
                 if (!this.elemToBeAdd) {
                     model = collection.create({
                         centerX: pos.x,
@@ -490,10 +623,24 @@ require(
                         value: item.value
                     });
                 } else {
-                    model = this.elemToBeAdd.model.set({
-                        centerX: pos.x,
-                        centerY: pos.y
-                    });
+                    if (this.elemToBeAdd.type != "line") {
+                        model = this.elemToBeAdd.model.set({
+                            centerX: pos.x,
+                            centerY: pos.y
+                        });
+                    } else {
+                        var modelData = this.elemToBeAdd.model.toJSON(),
+                            offset = {
+                                x: pos.x - modelData.centerX,
+                                y: pos.y - modelData.centerY
+                            },
+                            points = C.utils.updatePoints(this.elemToBeAdd.getPoints(), offset);
+                        model = this.elemToBeAdd.model.set({
+                            centerX: pos.x,
+                            centerY: pos.y,
+                            points: points
+                        });
+                    }
                 }
                 return model;
             },
@@ -535,40 +682,42 @@ require(
                     this.selectView(view);
                 }
             },
-            setAddViewEvents: function(){
+            setAddViewEvents: function() {
                 var self = this;
-                $(document).mousedown(function(event){
+                $(document).mousedown(function(event) {
                     if (self.isClickOnDevice(event)) {
-                        self.deviceView.trigger("setSelected", {event: event});
+                        self.deviceView.trigger("setSelected", { event: event });
                     } else if (self.isClickOnTool(event)) {
-                        self.toolView.trigger("setSelected", {event: event});
+                        self.toolView.trigger("setSelected", { event: event });
                     }
                 });
-                $(document).mousemove(function(event){
+                $(document).mousemove(function(event) {
                     self.hover(event);
                 });
-                $(document).mouseup(function(event){
+                $(document).mouseup(function(event) {
                     self.addItem(event);
                 });
             },
 
-            setBodyEvents: function(){
+            setBodyEvents: function() {
                 this.setAddViewEvents();
                 this.setMoveEvents();
                 this.setResizeEvents();
+                this.setCreateLineEvents();
                 this.setSelectEvents();
             },
             setOtherEvents: function() {
                 this.listenTo(Backbone, "setScale", this.scaleSvg);
             },
             scaleSvg: function(options) {
-                C.layer.topNotify("info", {content: "scale page " + options.value + "%", shade: false, time: 2});
+                this.scale = options.value;
+                var scale = options.value / 100;
+                this.svg.transform({scale: scale});
             },
 
             renderGrid: function() {
                 var gap = 12,
-                    box = this.svg.rbox(),
-                    start, end,
+                    box = this.root.rbox(),
                     shadowColor = "#f2f2f2",
                     deepColor = "#ccc",
                     lineWidth = 1,
@@ -577,9 +726,9 @@ require(
                 if (this.bg) {
                     this.bg.clear();
                 } else {
-                    this.bg = this.svg.group();
+                    this.bg = this.root.group();
                 }
-                for (i = 0; i <= max; i += gap) {
+                for (var i = 0; i <= max; i += gap) {
                     if (i <= box.height) { // 横线
                         path = this.bg.path("M " + 0 + " " + i + " L " + box.width + " " + i);
                         if ((i / gap) % 4) {
@@ -603,8 +752,9 @@ require(
             render: function(data) {
                 var $elem = $("<div></div>").addClass("draw-content");
                 this.$main.append($elem.attr("id", "svg-wrapper"));
-                this.svg = SVG($elem[0]).size("100%", "100%");
+                this.root = SVG($elem[0]).size("100%", "100%");
                 this.renderGrid();
+                this.svg = this.root.group();
             },
             setRightBtnMenu: function() {
                 $(document).contextmenu(function(event) {
@@ -619,7 +769,7 @@ require(
             },
 
             initAttr: function() {
-                this.attrView = new Attr.view({ model: new Attr.model()});
+                this.attrView = new Attr.view({ model: new Attr.model() });
                 this.$main.append(this.attrView.render().el);
             },
 
@@ -659,12 +809,14 @@ require(
                     return;
                 }
             }
-        }
+        };
 
-        Draw.init({
+        Draw.init(
+            {
                 el: ".outer-container",
                 isEdit: true,
-                tools: [{
+                tools: [
+                    {
                         type: "rect",
                         name: "矩形"
                     },
@@ -681,11 +833,13 @@ require(
                         name: "折线"
                     },
                 ],
-                devices: [{
+                devices: [
+                    {
                         type: 2,
                         name: "接地设备",
-                        src: "./imgs/2.svg",
-                        devices: [{
+                        src: "/imgs/2.svg",
+                        devices: [
+                            {
                                 id: 1,
                                 name: "jack-1jack-1jack-1",
                                 available: true
@@ -705,17 +859,17 @@ require(
                     {
                         type: 3,
                         name: "接地设备",
-                        src: "./imgs/3.svg"
+                        src: "/imgs/3.svg"
                     },
                     {
                         type: 4,
                         name: "接地设备",
-                        src: "./imgs/4.svg"
+                        src: "/imgs/4.svg"
                     },
                     {
                         type: 5,
                         name: "接地设备",
-                        src: "./imgs/5.svg"
+                        src: "/imgs/5.svg"
                     }
                 ]
             },

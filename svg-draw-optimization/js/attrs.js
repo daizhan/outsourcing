@@ -1,6 +1,6 @@
 define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common"], function($, _, Backbone, SVG, tpl, C) {
     var attrModel = Backbone.Model.extend({
-        defaults: function(){
+        defaults: function() {
             return {
                 undo: {
                     className: "undo",
@@ -26,7 +26,7 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
                     default: 100,
                     available: true,
                     list: [
-                        200, 150, 125, 110, 100, 90, 75, 50, 25
+                        500, 300, 200, 150, 125, 110, 100, 90, 75, 50
                     ],
                     text: "缩放",
                 },
@@ -59,7 +59,7 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
                 textColor: {
                     className: "color",
                     value: "",
-                    default: "333",
+                    default: "#333",
                     available: false,
                     text: "字体颜色",
                 },
@@ -78,15 +78,15 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
                 arrange: {
                     value: "",
                     list: [
-                        {value: "arrange-left", text: "左对齐"},
-                        {value: "arrange-right", text: "右对齐"},
-                        {value: "arrange-top", text: "顶对齐"},
-                        {value: "arrange-bottom", text: "底对齐"},
-                        {value: "arrange-center", text: "水平居中"},
-                        {value: "arrange-middle", text: "垂直居中"},
-                        {value: "arrange-center-middle", text: "水平垂直居中"},
-                        {value: "arrange-h", text: "水平分布"},
-                        {value: "arrange-v", text: "垂直分布"}
+                        { value: "arrange-left", text: "左对齐" },
+                        { value: "arrange-right", text: "右对齐" },
+                        { value: "arrange-top", text: "顶对齐" },
+                        { value: "arrange-bottom", text: "底对齐" },
+                        { value: "arrange-center", text: "水平居中" },
+                        { value: "arrange-middle", text: "垂直居中" },
+                        { value: "arrange-center-middle", text: "水平垂直居中" },
+                        { value: "arrange-h", text: "水平分布" },
+                        { value: "arrange-v", text: "垂直分布" }
                     ],
                     className: "arrange-left",
                     default: "arrange-left",
@@ -96,14 +96,14 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
                 fillColor: {
                     className: "fill-color",
                     value: "",
-                    default: "fff",
+                    default: "#fff",
                     available: false,
                     text: "填充色",
                 },
                 borderColor: {
                     className: "stroke-color",
                     value: "",
-                    default: "666",
+                    default: "#666",
                     available: false,
                     text: "边框色",
                 },
@@ -112,9 +112,9 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
                     value: "",
                     default: "solid",
                     list: [
-                        { value: "solid", text: ""},
-                        { value: "dashed", text: ""},
-                        { value: "dot", text: ""}
+                        { value: "solid", text: "" },
+                        { value: "dashed", text: "" },
+                        { value: "dot", text: "" }
                     ],
                     available: false,
                     text: "边框类型",
@@ -133,8 +133,8 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
                     className: "line-start",
                     value: "",
                     list: [
-                        { value: "line-no-arrow", text: "直线"},
-                        { value: "line-with-arrow", text: "实心箭头"}
+                        { value: "line-no-arrow", text: "直线" },
+                        { value: "line-with-arrow", text: "实心箭头" }
                     ],
                     default: "line-no-arrow",
                     available: false,
@@ -145,8 +145,8 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
                     default: "line-with-arrow",
                     value: "",
                     list: [
-                        { value: "line-no-arrow", text: "直线"},
-                        { value: "line-with-arrow", text: "实心箭头"}
+                        { value: "line-no-arrow", text: "直线" },
+                        { value: "line-with-arrow", text: "实心箭头" }
                     ],
                     available: false,
                     text: "终点类型",
@@ -199,7 +199,7 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
                     w: "",
                     available: false
                 },
-                viewId: 0,
+                viewIds: [],
             };
         },
         sync: function(mothod, model, options) {
@@ -219,7 +219,8 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
             rect: ["startArrow", "endArrow"],
             device: ["fillColor", "borderColor", "borderStyle", "borderWidth", "startArrow", "endArrow"]
         },
-        categories: [{
+        categories: [
+            {
                 name: "recovery",
                 attrs: ["undo", "redo", "formatBrush", "scale"]
             },
@@ -247,8 +248,6 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
         tagName: "div",
         className: "top-attrs",
         initialize: function() {
-            var self = this;
-
             this.listenTo(this.model, "sync", this.render);
             this.on({
                 "showTypeAttr": this.showTypeAttr
@@ -304,7 +303,7 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
                     data.push(category);
                 }
             });
-            return {attrCategories: data};
+            return { attrCategories: data };
         },
         render: function() {
             this.$el.html(this.template(this.formatData()));
@@ -322,17 +321,25 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
         },
 
         // events
-        showTypeAttr: function(options){
-            var self = this;
-            options = options || {};
-            if (!Array.isArray(options.types) || !options.types.length) {
-                this.model.save(this.model.defaults());
-                return;
-            }
+        showTypeAttr: function(options) {
             var self = this,
                 disabledAttr = [],
                 modelData = this.model.toJSON();
-            options.types.forEach(function(type, index){
+            options = options || {};
+            // 默认情况
+            if (!Array.isArray(options.types) || !options.types.length) {
+                modelData = this.model.defaults();
+                options.style = options.style || {};
+                _.each(modelData, function(attr, key) {
+                    if (attr.available) {
+                        attr.value = options.style[key] || attr.default || "";
+                    }
+                });
+                modelData.viewIds = options.viewIds || [];
+                this.model.save(modelData);
+                return;
+            }
+            options.types.forEach(function(type, index) {
                 var attrs = self.svgElemDisabledAttrs[type] || [];
                 if (index != 0) {
                     disabledAttr = _.intersection(disabledAttr, attrs);
@@ -340,20 +347,24 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
                     disabledAttr = attrs;
                 }
             });
-            _.each(modelData, function(attr, key){
+            _.each(modelData, function(attr, key) {
                 if (disabledAttr.indexOf(key) != -1) {
                     attr.available = false;
                     attr.value = "";
                 } else if (self.selectedAttrs.indexOf(key) != -1) {
                     attr.available = true;
+                    attr.value = options.style[key] || attr.default || "";
                 } else if (self.commonAttrs.indexOf(key) == -1) {
                     attr.available = true;
+                    attr.value = options.style[key] || attr.default || "";
                 }
             });
+            modelData.viewIds = options.viewIds || [];
             this.model.save(modelData);
         },
         setAttr: function(options) {
             var attr = this.model.get(options.name),
+                ids = this.model.get("viewIds"),
                 data = {},
                 value = options.value;
             if (options.check) {
@@ -362,14 +373,14 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
             attr.value = value;
             data[options.name] = attr;
             this.model.save(attr);
-            Backbone.trigger("set" + options.name[0].toUpperCase() + options.name.slice(1), { value: value });
+            Backbone.trigger("set" + options.name[0].toUpperCase() + options.name.slice(1), { attr: options.name, value: value, viewIds: ids });
         },
-        getProperFontSizeValue: function(value){
-            var fontSize = this.model.get("fontSize"),
-                value = parseInt(value, 10);
+        getProperFontSizeValue: function(value) {
+            var fontSize = this.model.get("fontSize");
+            value = parseInt(value, 10);
             if (!value) {
                 value = fontSize.default;
-            } else if (value <fontSize.min) {
+            } else if (value < fontSize.min) {
                 value = fontSize.min;
             } else if (value > fontSize.max) {
                 value = fontSize.max;
@@ -389,7 +400,7 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
                 event.target.blur();
             }
         },
-        modifyFontSize: function(event){
+        modifyFontSize: function(event) {
             var fontSize = this.model.get("fontSize"),
                 $target = $(event.target),
                 value = fontSize.value || fontSize.default;
@@ -404,9 +415,9 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
                 check: "getProperFontSizeValue"
             });
         },
-        getProperScaleValue: function(value){
-            var scale = this.model.get("scale"),
-                value = parseInt(value);
+        getProperScaleValue: function(value) {
+            var scale = this.model.get("scale");
+            value = parseInt(value);
             if (!value) {
                 value = scale.default;
             }
@@ -417,7 +428,7 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
             }
             return value;
         },
-        manualSetScale: function(event){
+        manualSetScale: function(event) {
             if (event.type == "focus" || event.type == "focusin") {
                 event.target.select();
             } else if (event.keyCode == 13) {
@@ -430,14 +441,14 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
                 event.target.blur();
             }
         },
-        showScaleItems: function($target){
+        showScaleItems: function($target) {
             var self = this,
                 scale = this.model.get("scale"),
                 data = {
                     type: "with-selected no-icon",
                     menus: []
                 };
-            scale.list.forEach(function(item){
+            scale.list.forEach(function(item) {
                 var isSelected = false,
                     selectedValue = scale.value || scale.default;
                 if (item == selectedValue) {
@@ -451,7 +462,7 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
                     shortcut: ""
                 });
             });
-            C.popupMenu.init($target, data, function(data){
+            C.popupMenu.init($target, data, function(data) {
                 self.setAttr({
                     name: "scale",
                     value: data.value,
@@ -459,14 +470,14 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
                 });
             }, "triggerByTarget");
         },
-        showFontItems: function($target){
+        showFontItems: function($target) {
             var self = this,
-            font = this.model.get("font"),
-            data = {
-                type: "with-selected no-icon",
-                menus: []
-            };
-            font.list.forEach(function(item){
+                font = this.model.get("font"),
+                data = {
+                    type: "with-selected no-icon",
+                    menus: []
+                };
+            font.list.forEach(function(item) {
                 var isSelected = false,
                     selectedValue = font.value || font.default;
                 if (item == selectedValue) {
@@ -480,26 +491,26 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
                     shortcut: ""
                 });
             });
-            C.popupMenu.init($target, data, function(data){
+            C.popupMenu.init($target, data, function(data) {
                 self.setAttr({ name: "font", value: data.value });
-            }, "triggerByTarget"); 
+            }, "triggerByTarget");
         },
-        showColorItems: function($target, attr){
+        showColorItems: function($target, attr) {
             var self = this,
                 color = this.model.get(attr),
                 value = color.value || color.default;
-            C.colorPicker.init($target, value, function(color) {
-                self.setAttr({ name: attr, value: color });
+            C.colorPicker.init($target, value ? value.slice(1) : "", function(color) {
+                self.setAttr({ name: attr, value: "#" + color });
             }, "triggerByTarget");
         },
-        showLineArrowItems: function($target, attrName){
+        showLineArrowItems: function($target, attrName) {
             var self = this,
                 attr = this.model.get(attrName),
                 data = {
                     type: "with-selected " + attr.className,
                     menus: []
                 };
-            attr.list.forEach(function(item){
+            attr.list.forEach(function(item) {
                 var isSelected = false,
                     selectedValue = attr.value || attr.default;
                 if (item.value == selectedValue) {
@@ -513,18 +524,18 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
                     shortcut: ""
                 });
             });
-            C.popupMenu.init($target, data, function(data){
+            C.popupMenu.init($target, data, function(data) {
                 self.setAttr({ name: attrName, value: data.value });
             }, "triggerByTarget");
         },
-        showBorderWidthItems: function($target){
+        showBorderWidthItems: function($target) {
             var self = this,
-            attr = this.model.get("borderWidth"),
-            data = {
-                type: "with-selected no-icon",
-                menus: []
-            };
-            attr.list.forEach(function(item){
+                attr = this.model.get("borderWidth"),
+                data = {
+                    type: "with-selected no-icon",
+                    menus: []
+                };
+            attr.list.forEach(function(item) {
                 var isSelected = false,
                     selectedValue = attr.value || attr.default;
                 if (item == selectedValue) {
@@ -538,18 +549,18 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
                     shortcut: ""
                 });
             });
-            C.popupMenu.init($target, data, function(data){
+            C.popupMenu.init($target, data, function(data) {
                 self.setAttr({ name: "borderWidth", value: data.value });
             }, "triggerByTarget");
         },
-        showBorderStyleItems: function($target){
+        showBorderStyleItems: function($target) {
             var self = this,
-            attr = this.model.get("borderStyle"),
-            data = {
-                type: "with-selected no-icon set-border-style",
-                menus: []
-            };
-            attr.list.forEach(function(item){
+                attr = this.model.get("borderStyle"),
+                data = {
+                    type: "with-selected no-icon set-border-style",
+                    menus: []
+                };
+            attr.list.forEach(function(item) {
                 var isSelected = false,
                     selectedValue = attr.value || attr.default;
                 if (item.value == selectedValue) {
@@ -563,18 +574,18 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
                     shortcut: ""
                 });
             });
-            C.popupMenu.init($target, data, function(data){
+            C.popupMenu.init($target, data, function(data) {
                 self.setAttr({ name: "borderStyle", value: data.value });
             }, "triggerByTarget");
         },
-        showArrangeItems: function($target){
+        showArrangeItems: function($target) {
             var self = this,
-            attr = this.model.get("arrange"),
-            data = {
-                type: "with-selected no-icon",
-                menus: []
-            };
-            attr.list.forEach(function(item){
+                attr = this.model.get("arrange"),
+                data = {
+                    type: "with-selected no-icon",
+                    menus: []
+                };
+            attr.list.forEach(function(item) {
                 var isSelected = false,
                     selectedValue = attr.value || attr.default;
                 if (item.value == selectedValue) {
@@ -588,11 +599,11 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
                     shortcut: ""
                 });
             });
-            C.popupMenu.init($target, data, function(data){
+            C.popupMenu.init($target, data, function(data) {
                 self.setAttr({ name: "arrange", value: data.value });
             }, "triggerByTarget");
         },
-        showAttrItems: function(event){
+        showAttrItems: function(event) {
             var $target = $(event.currentTarget),
                 attr = $target.attr("data-attr");
             if ($target.hasClass("disabled")) {
@@ -602,19 +613,18 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
                 if (event.target.nodeName != "INPUT") {
                     this.showScaleItems($target);
                 }
-            } else if (attr == "font"){
+            } else if (attr == "font") {
                 this.showFontItems($target);
-            } else if ((["textColor", "fillColor", "borderColor"]).indexOf(attr) != -1){
+            } else if ((["textColor", "fillColor", "borderColor"]).indexOf(attr) != -1) {
                 this.showColorItems($target, attr);
-            } else if (attr == "startArrow" || attr == "endArrow"){
+            } else if (attr == "startArrow" || attr == "endArrow") {
                 this.showLineArrowItems($target, attr);
-            } else if (attr == "borderStyle"){
+            } else if (attr == "borderStyle") {
                 this.showBorderStyleItems($target);
-            } else if (attr == "borderWidth"){
+            } else if (attr == "borderWidth") {
                 this.showBorderWidthItems($target);
-            } else if (attr == "arrange"){
+            } else if (attr == "arrange") {
                 this.showArrangeItems($target);
-            } else {
             }
         },
     });
@@ -622,5 +632,5 @@ define(["jquery", "underscore", "backbone", "svg", "templates/attr-tpl", "common
     return {
         view: attrView,
         model: attrModel
-    }
+    };
 });

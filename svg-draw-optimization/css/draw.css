@@ -306,6 +306,7 @@ textarea {
     margin: 5px 2px 5px 0;
     background-position: -32px -329px;
 }
+
 .draw-container .top-attrs .attrs li.line-start.line-no-arrow p.bg-icon,
 .draw-container .top-attrs .attrs li.line-start.line-with-arrow p.bg-icon {
     -webkit-transform: rotate(180deg);
@@ -587,10 +588,9 @@ textarea {
 
 .draw-container .draw-content {
     height: 700px;
-    width: inherit;
+    width: 1160px;
     overflow: hidden;
     position: relative;
-    overflow: auto;
     margin-left: -1px;
     margin-top: -1px;
     border: 1px solid #d7d7d7;
@@ -599,10 +599,10 @@ textarea {
 
 .draw-container.can-edit .draw-content {
     margin-bottom: 100px;
+    padding: 20px;
 }
 
 #svg-wrapper svg {
-    margin: 20px;
     background: #fff;
 }
 
@@ -623,18 +623,29 @@ textarea {
 text {
     font-family: inherit;
 }
+
 .svg-cursor-nesw {
     cursor: nesw-resize;
 }
+
 .svg-cursor-nwse {
     cursor: nwse-resize;
 }
+
 .svg-cursor-ew {
     cursor: ew-resize;
 }
-.svg-rect-group, .svg-device-group, .svg-line-group {
+
+.svg-cursor-ns {
+    cursor: ns-resize;
+}
+
+.svg-rect-group,
+.svg-device-group,
+.svg-line-group {
     cursor: move;
 }
+
 .dsn {
     display: none;
 }

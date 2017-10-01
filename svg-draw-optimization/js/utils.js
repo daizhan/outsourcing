@@ -27,24 +27,31 @@ define(["jquery"], function($) {
             };
         })(),
 
-        distance: function(pointA, pointB){},
-        // 根据对角线上点，计算矩形的四个点，按照顺时针顺序返回点集
-        getRectPoints: function(pointA, pointB){
-            var minX = Math.min(pointA.x, pointB.x),
-                minY = Math.min(pointA.y, pointB.y),
-                maxX = Math.max(pointA.x, pointB.x),
-                maxY = Math.max(pointA.y, pointB.y);
-            return [
-                {x: minX, y: minY},
-                {x: maxX, y: minY},
-                {x: maxX, y: maxY},
-                {x: minX, y: maxY}
-            ];
+        distance: function(pointA, pointB) {
+            return Math.sqrt(Math.pow(pointA.x - pointB.x, 2) + Math.pow(pointA.y - pointB.y, 2));
         },
-        rectCoordCompare: function(rectA, rectB){
-            return {
-                upperX: rect
-            };
+        // 是否可以智能靠近
+        canAutoConnect: function(pointA, pointB, diff) {
+            if (typeof diff != "number") {
+                diff = 10;
+            }
+            var dis = this.distance(pointA, pointB);
+            return dis <= 10;
+        },
+        // 根据给定点，计算最小包含矩形的四个点，按照顺时针顺序返回点集
+        getRectPoints: function(points) {
+            var xValues = points.map(function(item) { return item.x; }),
+                yValues = points.map(function(item) { return item.y; }),
+                minX = Math.min.apply(Math, xValues),
+                minY = Math.min.apply(Math, yValues),
+                maxX = Math.max.apply(Math, xValues),
+                maxY = Math.max.apply(Math, yValues);
+            return [
+                { x: minX, y: minY },
+                { x: maxX, y: minY },
+                { x: maxX, y: maxY },
+                { x: minX, y: maxY }
+            ];
         },
         // is big contain small
         isRectContain: function(bigRect, smallRect) {
@@ -78,7 +85,7 @@ define(["jquery"], function($) {
             leftDown: 3,
             rightDown: 4
         },
-        getPointDirection: function(pointA, pointB){
+        getPointDirection: function(pointA, pointB) {
             if (pointA.x > pointB.x && pointA.y >= pointB.y) {
                 return this.direction.rightDown;
             }
@@ -92,11 +99,11 @@ define(["jquery"], function($) {
                 return this.direction.leftDown;
             }
         },
-        getScaleOffset: function(index, lastPos, currPos){
+        getScaleOffset: function(index, lastPos, currPos) {
             var offset = {
                 x: currPos.x - lastPos.x,
                 y: currPos.y - lastPos.y
-            }
+            };
             if (index == 1) {
                 offset.x = -offset.x;
                 offset.y = -offset.y;
@@ -107,5 +114,134 @@ define(["jquery"], function($) {
             }
             return offset;
         },
-    }
+        getPointsRectInfo: function(points) {
+            var rect = this.getRectPoints(points),
+                width = rect[2].x - rect[0].x,
+                height = rect[2].y - rect[0].y,
+                cx = (rect[0].x + rect[2].x) / 2,
+                cy = (rect[0].y + rect[2].y) / 2;
+            return {
+                points: rect,
+                height: height,
+                width: width,
+                cx: cx,
+                cy: cy
+            };
+        },
+        updatePoints: function(points, offset) {
+            points.forEach(function(point) {
+                point.x += offset.x;
+                point.y += offset.y;
+            });
+            return points;
+        },
+        parsePointInt: function(points) {
+            points.forEach(function(point) {
+                point.x = parseInt(point.x);
+                point.y = parseInt(point.y);
+            });
+            return points;
+        },
+        isFloatEqual: function(a, b) {
+            var maxDiff = Math.pow(10, -5);
+            return Math.abs(a - b) < maxDiff;
+        },
+        updateLinePoints: function(points, index, offset) {
+            var affectPoints,
+                endIndex;
+            if (points.length == 2) {
+                points[index].x += offset.x;
+                points[index].y += offset.y;
+                return points;
+            }
+            if (index == 0) {
+                affectPoints = points.slice(0, 2);
+            } else if (index == points.length) {
+                affectPoints = points.slice(-2);
+            } else {
+                affectPoints = [points[index - 1], points[index]];
+            }
+            // 重合，一起偏移
+            if (this.isFloatEqual(affectPoints[0].x, affectPoints[1].x) && this.isFloatEqual(affectPoints[0].y, affectPoints[1].y)) {
+                affectPoints[0].x += offset.x;
+                affectPoints[1].x += offset.x;
+                affectPoints[0].y += offset.y;
+                affectPoints[1].y += offset.y;
+            } else {
+                // 垂直线
+                if (this.isFloatEqual(affectPoints[0].x, affectPoints[1].x)) {
+                    affectPoints[0].x += offset.x;
+                    affectPoints[1].x += offset.x;
+                    if (index == 0 || index == points.length) { // 端点
+                        endIndex = Math.min(Math.max(index - 1, 0), affectPoints.length - 1);
+                        affectPoints[endIndex].y += offset.y;
+                    }
+                }
+                if (this.isFloatEqual(affectPoints[0].y, affectPoints[1].y)) { // 水平线
+                    affectPoints[0].y += offset.y;
+                    affectPoints[1].y += offset.y;
+                    if (index == 0 || index == points.length) { // 端点
+                        endIndex = Math.min(Math.max(index - 1, 0), affectPoints.length - 1);
+                        affectPoints[endIndex].x += offset.x;
+                    }
+                }
+            }
+            return points;
+        },
+        minDisToRect: function(point, points){
+            var rect = this.getRectPoints(points);
+            // 矩形内部
+            if (point.x >= rect[0].x && point.x <= rect[2].x && point.y >= rect[0].y && point.y <= rect[2].y) {
+                return Math.min(
+                    Math.abs(point.x-rect[0].x),
+                    Math.abs(point.y-rect[0].y),
+                    Math.abs(point.x-rect[2].x),
+                    Math.abs(point.y-rect[2].y)
+                );
+            } else if (point.x >= rect[0].x && point.x <= rect[2].x) { // x 轴区间内
+                return Math.min(
+                    Math.abs(point.y-rect[0].y),
+                    Math.abs(point.y-rect[2].y)
+                );
+            } else if (point.y >= rect[0].y && point.y <= rect[2].y) { // y 轴区间内
+                return Math.min(
+                    Math.abs(point.x-rect[0].x),
+                    Math.abs(point.x-rect[2].x)
+                );
+            } else {
+                var minDis = -1,
+                    self = this;
+                rect.forEach(function(item){
+                    var dis = self.distance(item, point);
+                    if (minDis == -1 || dis < minDis) {
+                        minDis = dis;
+                    }
+                });
+                return minDis;
+            }
+        },
+        deepCopy: function(obj) {
+            var newObj = null;
+            if (Array.isArray(obj)) {
+                newObj = [];
+                for (var i = 0; i < obj.length; i++) {
+                    newObj.push(this.deepCopy(obj[i]));
+                }
+            } else if (typeof obj == "object") {
+                newObj = {};
+                for (var key in obj) {
+                    if (!obj.hasOwnProperty(key)) {
+                        continue;
+                    }
+                    var type = typeof obj[key];
+                    if (type != "object") {
+                        newObj[key] = obj[key];
+                    } else {
+                        newObj[key] = this.deepCopy(obj[key]);
+                    }
+                }
+            }
+            return newObj;
+        }
+    };
 });

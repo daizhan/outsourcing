@@ -24,18 +24,25 @@ define(["jquery", "underscore", "backbone", "svg"], function($, _, Backbone, SVG
                 text: "",
                 font: "",
                 fontSize: 0,
-                fontStyle: "",
+                textBold: "",
+                textItalic: "",
+                textColor: "",
 
-                borderWidth: 0,
+                arrange: "",
+
+                borderWidth: 1,
                 borderStyle: "",
-                strokeColor: "",
-                fullColor: "",
+                borderColor: "",
+                fillColor: "",
+
+                startArrow: '',
+                endArrow: '',
 
                 rotate: 0,
 
                 parentId: "",
                 children: []
-            }
+            };
         },
 
         sync: function(method, model, options) {

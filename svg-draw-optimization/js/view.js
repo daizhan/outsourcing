@@ -14,8 +14,9 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             };
         },
 
-        getSvgRoot: function(isSvgNode) {
-            return this.svg.doc();
+        getSvgRoot: function() {
+            var svgRoot = this.svg.doc();
+            return svgRoot;
         },
         getMainContainerElem: function() {
             return $(this.svg.node).parents(".draw-container");
@@ -69,7 +70,6 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 },
                 boxWidth = svg.bbox().width,
                 svgText = svg.text(""),
-                svgTspan = null,
                 textBox = null,
                 lineText = [],
                 str = "",
@@ -99,51 +99,139 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             return svgText;
         },
 
-        getDefaultStyle: function() {},
-        getCurrentStyle: function() {},
-        setStyle: function() {},
+        getStyleList: function() {
+            var styles = [
+                "font", "fontSize", "textColor", "textBold", "textItalic",
+                "arrange",
+                "fillColor", "borderColor", "borderStyle", "borderWidth",
+                "startArrow", "endArrow",
+                "width", "height",
+            ];
+            return styles;
+        },
+        getDefaultStyle: function() {
+            return this.defaultStyle;
+        },
+        getStyle: function() {
+            var defaultStyle = this.getDefaultStyle(),
+                styleList = this.getStyleList(),
+                currentStyle = _.pick.apply(_, [this.model.toJSON()].concat(styleList));
+            _.each(currentStyle, function(value, key) {
+                currentStyle[key] = currentStyle[key] || defaultStyle[key] || "";
+            });
+            return _.extend({}, defaultStyle, currentStyle);
+        },
+        filterStyle: function() {
+            var style = this.getStyle();
+            if (style.borderStyle == "dot") {
+                style.borderStyle = "2, 2";
+            } else if (style.borderStyle == "dashed") {
+                style.borderStyle = "6, 6";
+            } else {
+                style.borderStyle = "none";
+            }
+            return style;
+        },
+        setStyle: function(elem) {
+            var style = this.filterStyle();
+            elem.attr({
+                stroke: style.borderColor,
+                "stroke-width": style.borderWidth,
+                "stroke-dasharray": style.borderStyle,
+                fill: this.type == "line" ? "none" : style.fillColor
+            });
+        },
+        setTextStyle: function(elem) {
+            var style = this.filterStyle();
+            elem.attr({
+                fill: style.textColor,
+                "font-family": style.font,
+                "font-size": style.fontSize + "px",
+                "font-style": style.textBold ? "bold" : (style.textItalic ? "italic" : "normal")
+            });
+        },
 
-        setFont: function(options){
-            C.layer.topNotify("info", {content: "set font " + options.value, shade: false, time: 2});
-        },
-        setFontSize: function(options){
-            C.layer.topNotify("info", {content: "set font size" + options.value + "px", shade: false, time: 2});
-        },
-
-        setTextColor: function(options){
-            C.layer.topNotify("info", {content: "set text color #" + options.value, shade: false, time: 2});
-        },
-        setFillColor: function(options){
-            C.layer.topNotify("info", {content: "set fill color #" + options.value, shade: false, time: 2});
-        },
-        setBorderColor: function(options){
-            C.layer.topNotify("info", {content: "set border color #" + options.value, shade: false, time: 2});
-        },
-        setLinePoint: function(options){
-            C.layer.topNotify("info", {content: "set line point " + options.value, shade: false, time: 2});
-        },
-        setBorderWidth: function(options){
-            C.layer.topNotify("info", {content: "set border width" + options.value, shade: false, time: 2});
-        },
-        setBorderStyle: function(options){
-            C.layer.topNotify("info", {content: "set border style " + options.value, shade: false, time: 2});
+        isIncludeCurrentView: function(ids) {
+            ids = ids || [];
+            if (!~ids.indexOf(this.id)) {
+                return false;
+            }
+            return true;
         },
 
-        setArrange: function(options){
-            C.layer.topNotify("info", {content: "set arrange " + options.value, shade: false, time: 2});
+        setFont: function(options) {
+            if (this.isIncludeCurrentView(options.viewIds)) {
+                var data = {};
+                data[options.attr] = options.value;
+                this.model.set(data);
+            }
+        },
+        setFontSize: function(options) {
+            if (this.isIncludeCurrentView(options.viewIds)) {
+                var data = {};
+                data[options.attr] = options.value;
+                this.model.set(data);
+            }
         },
 
-        createBorder: function(positionGroup, isShow){
+        setTextColor: function(options) {
+            if (this.isIncludeCurrentView(options.viewIds)) {
+                var data = {};
+                data[options.attr] = options.value;
+                this.model.set(data);
+            }
+        },
+        setFillColor: function(options) {
+            if (this.isIncludeCurrentView(options.viewIds)) {
+                var data = {};
+                data[options.attr] = options.value;
+                this.model.set(data);
+            }
+        },
+        setBorderColor: function(options) {
+            if (this.isIncludeCurrentView(options.viewIds)) {
+                var data = {};
+                data[options.attr] = options.value;
+                this.model.set(data);
+            }
+        },
+        setLinePoint: function(options) {
+            if (this.isIncludeCurrentView(options.viewIds)) {
+                var data = {};
+                data[options.attr] = options.value;
+                this.model.set(data);
+            }
+        },
+        setBorderWidth: function(options) {
+            if (this.isIncludeCurrentView(options.viewIds)) {
+                var data = {};
+                data[options.attr] = options.value;
+                this.model.set(data);
+            }
+        },
+        setBorderStyle: function(options) {
+            if (this.isIncludeCurrentView(options.viewIds)) {
+                var data = {};
+                data[options.attr] = options.value;
+                this.model.set(data);
+            }
+        },
+
+        setArrange: function(options) {
+            C.layer.topNotify("info", { content: "set arrange " + options.value, shade: false, time: 2 });
+        },
+
+        createBorder: function(positionGroup, isShow) {
             var padding = 0,
-                corderWidth = 6,
+                cornerWidth = 6,
                 box = positionGroup.bbox(),
                 group = this.svg.group().addClass("svg-group-border"),
                 centerPoints = [
                     box,
-                    {cx: box.cx - box.width/2 - padding, cy: box.cy - box.height/2 - padding, width: corderWidth, height: corderWidth},
-                    {cx: box.cx + box.width/2 + padding, cy: box.cy - box.height/2 - padding, width: corderWidth, height: corderWidth},
-                    {cx: box.cx + box.width/2 + padding, cy: box.cy + box.height/2 + padding, width: corderWidth, height: corderWidth},
-                    {cx: box.cx - box.width/2 - padding, cy: box.cy + box.height/2 + padding, width: corderWidth, height: corderWidth},
+                    { cx: box.cx - box.width / 2 - padding, cy: box.cy - box.height / 2 - padding, width: cornerWidth, height: cornerWidth },
+                    { cx: box.cx + box.width / 2 + padding, cy: box.cy - box.height / 2 - padding, width: cornerWidth, height: cornerWidth },
+                    { cx: box.cx + box.width / 2 + padding, cy: box.cy + box.height / 2 + padding, width: cornerWidth, height: cornerWidth },
+                    { cx: box.cx - box.width / 2 - padding, cy: box.cy + box.height / 2 + padding, width: cornerWidth, height: cornerWidth },
                 ],
                 path = null;
             if (!isShow) {
@@ -151,16 +239,16 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             }
             group.back();
             this.borderGroup = group;
-            for (var i = 0, len = centerPoints.length; i < len; i ++) {
+            for (var i = 0, len = centerPoints.length; i < len; i++) {
                 box = centerPoints[i];
                 path = group.path(
-                    "M " + (box.cx - box.width/2) + " " + (box.cy - box.height/2) +
-                    "L " + (box.cx + box.width/2) + " " + (box.cy - box.height/2) +
-                    "L " + (box.cx + box.width/2) + " " + (box.cy + box.height/2) +
-                    "L " + (box.cx - box.width/2) + " " + (box.cy + box.height/2) +
+                    "M " + (box.cx - box.width / 2) + " " + (box.cy - box.height / 2) +
+                    "L " + (box.cx + box.width / 2) + " " + (box.cy - box.height / 2) +
+                    "L " + (box.cx + box.width / 2) + " " + (box.cy + box.height / 2) +
+                    "L " + (box.cx - box.width / 2) + " " + (box.cy + box.height / 2) +
                     "Z"
                 );
-                path.stroke({ color: "#60f"})
+                path.stroke({ color: "#60f" })
                     .fill("#fff");
                 if (i != 0) {
                     path.addClass("svg-border-corner").attr("data-order", i);
@@ -172,30 +260,32 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 }
             }
         },
-
-        createConnectPoints: function(positionGroup, isShow){
+        getConnectPoints: function(positionGroup) {
             var padding = 0,
-                corderWidth = 6,
-                box = positionGroup.bbox(),
-                group = this.svg.group().addClass("svg-group-points"),
-                centerPoints = [
-                    {cx: box.cx, cy: box.cy - box.height/2 - padding, width: corderWidth},
-                    {cx: box.cx + box.width/2 + padding, cy: box.cy, width: corderWidth},
-                    {cx: box.cx, cy: box.cy + box.height/2 + padding, width: corderWidth},
-                    {cx: box.cx - box.width/2 - padding, cy: box.cy, width: corderWidth},
-                ],
+                box = positionGroup.bbox();
+            return [
+                { x: box.cx, y: box.cy - box.height / 2 - padding },
+                { x: box.cx + box.width / 2 + padding, y: box.cy },
+                { x: box.cx, y: box.cy + box.height / 2 + padding },
+                { x: box.cx - box.width / 2 - padding, y: box.cy }
+            ];
+        },
+        createConnectPoints: function(positionGroup, isShow) {
+            var group = this.svg.group().addClass("svg-group-points"),
+                cornerWidth = 6,
+                centerPoints = this.getConnectPoints(positionGroup),
                 circle = null;
             if (!isShow) {
                 group.addClass("dsn");
             }
             this.pointGroup = group;
-            for (var i = 0, len = centerPoints.length; i < len; i ++) {
-                box = centerPoints[i];
-                circle = group.circle(box.width).center(box.cx, box.cy)
-                circle.fill("#999");
+            for (var i = 0, len = centerPoints.length; i < len; i++) {
+                var box = centerPoints[i];
+                circle = group.circle(cornerWidth).center(box.x, box.y);
+                circle.fill("#999").attr("data-order", i);
             }
         },
-        setPointGroupStatus: function(isShow){
+        setPointGroupStatus: function(isShow) {
             if (!this.pointGroup) {
                 return;
             }
@@ -205,7 +295,16 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 this.pointGroup.addClass("dsn");
             }
         },
-        setBorderGroupStatus: function(isShow){
+        showConnectPoints: function(options) {
+            if (options.id == this.id) {
+                this.setPointGroupStatus(true);
+                this.isShowPoints = true;
+            } else {
+                this.setPointGroupStatus(false);
+                this.isShowPoints = false;
+            }
+        },
+        setBorderGroupStatus: function(isShow) {
             if (!this.borderGroup) {
                 return;
             }
@@ -215,26 +314,30 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 this.borderGroup.addClass("dsn");
             }
         },
-        removeSelected: function(){
+        removeSelected: function() {
             this.setBorderGroupStatus(false);
+            this.setPointGroupStatus(false);
             this.isSelected = false;
+            this.isShowPoints = false;
         },
-        selectedView: function(){
+        selectedView: function() {
             this.setBorderGroupStatus(true);
+            this.setPointGroupStatus(true);
+            this.isShowPoints = true;
             this.isSelected = true;
         },
-        moveView: function(offset){
+        moveView: function(offset) {
             var transform = this.svg.transform();
             this.svg.transform({
-                x: transform.x+offset.x,
-                y: transform.y+offset.y
+                x: transform.x + offset.x,
+                y: transform.y + offset.y
             });
         },
-        moveEnd: function(){
+        moveEnd: function() {
             var transform = this.svg.transform();
             this.model.set({ offset: transform });
         },
-        resizeView: function(size){
+        resizeView: function(size) {
             this.model.set({
                 width: size.width,
                 height: size.height,
@@ -249,11 +352,14 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         className: "svg-line",
         type: "line",
         defaultStyle: {
-            strokeColor: "#333",
-        },
-        defaultSize: {
+            borderColor: "#333",
+            borderStyle: "solid",
+            borderWidth: 1,
+            fillColor: "transparent",
+            startArrow: "line-no-arrow",
+            endArrow: "line-with-arrow",
             width: 100,
-            height: 60
+            height: 60,
         },
         init: function() {
             this.svg = new SVG.G().addClass(this.className);
@@ -262,7 +368,8 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             this.pointGroup = null;
 
             this.isSelected = false;
-
+            this.connectDis = 5;
+            this.closeDis = 10;
             this.setElement(this.svg.node);
             this.on({
                 "move": this.moveView,
@@ -271,97 +378,97 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             }, this);
         },
 
-        events: {
-        },
-        resizeView: function(size){
+        events: {},
+        resizeView: function(options) {
+            // 更新变动点的坐标
+            options.points = C.utils.updateLinePoints(options.points, options.order, { x: options.x, y: options.y });
+            var rect = C.utils.getPointsRectInfo(options.points);
             this.model.set({
-                width: size.width,
-                height: size.height,
-                centerX: size.centerX,
-                centerY: size.centerY
+                width: rect.width,
+                height: rect.height,
+                centerX: rect.cx,
+                centerY: rect.cy,
+                points: options.points
             });
         },
-        createBorder: function(isShow){
-            var points = this.getMovePoints();
-                corderWidth = 4,
+        createBorder: function(isShow) {
+            var endPoints = this.getPoints(),
+                points = this.getMovePoints(),
+                cornerWidth = 4,
                 group = this.svg.group().addClass("svg-group-border"),
-                centerPoints = [
-                    {cx: points.start.x, cy: points.start.y, width: corderWidth, height: corderWidth},
-                    {cx: points.end.x, cy: points.end.y, width: corderWidth, height: corderWidth},
-                ],
                 path = null;
-            if (points.mid){
-                centerPoints.push({cx: points.mid.x, cy: points.mid.y, width: corderWidth, height: corderWidth});
-            }
             if (!isShow) {
                 group.addClass("dsn");
             }
             this.borderGroup = group;
-            for (var i = 0, len = centerPoints.length; i < len; i ++) {
-                box = centerPoints[i];
+            for (var i = 0, len = points.length; i < len; i++) {
+                var box = points[i];
                 path = group.path(
-                    "M " + (box.cx - box.width/2) + " " + (box.cy - box.height/2) +
-                    "L " + (box.cx + box.width/2) + " " + (box.cy - box.height/2) +
-                    "L " + (box.cx + box.width/2) + " " + (box.cy + box.height/2) +
-                    "L " + (box.cx - box.width/2) + " " + (box.cy + box.height/2) +
+                    "M " + (box.x - cornerWidth / 2) + " " + (box.y - cornerWidth / 2) +
+                    "L " + (box.x + cornerWidth / 2) + " " + (box.y - cornerWidth / 2) +
+                    "L " + (box.x + cornerWidth / 2) + " " + (box.y + cornerWidth / 2) +
+                    "L " + (box.x - cornerWidth / 2) + " " + (box.y + cornerWidth / 2) +
                     "Z"
                 );
-                path.stroke({ color: "#60f"})
-                    .fill("#fff")
-                    .addClass("svg-border-corner svg-cursor-nesw");
                 if (i == 0) {
-                    path.removeClass("svg-cursor-nesw").addClass("svg-cursor-nwse");
+                    var resizeClass = "svg-cursor-nwse";
+                } else if (i == points.length - 1) {
+                    resizeClass = "svg-cursor-nesw";
+                } else {
+                    if (C.utils.isFloatEqual(endPoints[i - 1].x, endPoints[i].x)) {
+                        resizeClass = "svg-cursor-ew";
+                    } else {
+                        resizeClass = "svg-cursor-ns";
+                    }
                 }
-                if (i == 2) {
-                    path.removeClass("svg-cursor-nesw").addClass("svg-cursor-ew");
-                }
+                path.stroke({ color: "#60f" })
+                    .fill("#fff")
+                    .addClass("svg-border-corner " + resizeClass)
+                    .attr("data-order", i);
             }
         },
-        getSize: function(){
-            return {
-                width: this.model.get("width") || this.defaultSize.width,
-                height: this.model.get("height") || this.defaultSize.height
-            }
+        getSize: function() {
+            return _.pick(this.getStyle(), "width", "height");
         },
-        getLineDefaultPoints: function(){
+        getLineDefaultPoints: function() {
             var modelData = this.model.toJSON(),
                 size = this.getSize();
-            return {
-                start: {
-                    x: parseInt(modelData.centerX - size.width / 2),
-                    y: parseInt(modelData.centerY)
-                }, 
-                end: {
-                    x: parseInt(modelData.centerX + size.width / 2),
-                    y: parseInt(modelData.centerY)
+            return [
+                {
+                    x: modelData.centerX - size.width / 2,
+                    y: modelData.centerY
+                },
+                {
+                    x: modelData.centerX + size.width / 2,
+                    y: modelData.centerY
                 }
-            };
+            ];
         },
-        getPolylineDefaultPoints: function(){
+        getPolylineDefaultPoints: function() {
             var modelData = this.model.toJSON(),
                 size = this.getSize();
-            return {
-                start: {
-                    x: parseInt(modelData.centerX - size.width / 2),
-                    y: parseInt(modelData.centerY - size.height / 2)
+            return [
+                {
+                    x: modelData.centerX - size.width / 2,
+                    y: modelData.centerY - size.height / 2
                 },
-                point1: {
-                    x: parseInt(modelData.centerX),
-                    y: parseInt(modelData.centerY - size.height / 2)
+                {
+                    x: modelData.centerX,
+                    y: modelData.centerY - size.height / 2
                 },
-                point2: {
-                    x: parseInt(modelData.centerX),
-                    y: parseInt(modelData.centerY + size.height / 2)
+                {
+                    x: modelData.centerX,
+                    y: modelData.centerY + size.height / 2
                 },
-                end: {
-                    x: parseInt(modelData.centerX + size.width / 2),
-                    y: parseInt(modelData.centerY + size.height / 2)
+                {
+                    x: modelData.centerX + size.width / 2,
+                    y: modelData.centerY + size.height / 2
                 }
-            };
+            ];
         },
-        getPoints: function(){
+        getPoints: function(refresh) {
             var modelData = this.model.toJSON();
-            if (modelData.points.length) {
+            if (!refresh && modelData.points.length) {
                 return modelData.points;
             }
             if (modelData.value == "line") {
@@ -370,54 +477,115 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
                 return this.getPolylineDefaultPoints();
             }
         },
-        getEndPoints: function(){
+        getEndPoints: function() {
             var points = this.getPoints();
             return {
-                start: points.start,
-                end: points.end
+                start: points[0],
+                end: points[points.length - 1]
             };
         },
-        getMidPoints: function(){
-            var points = this.getPoints();
-            if (points.point1 || points.point2) {
-                return {
-                    point1: points.point1,
-                    point2: points.point2
-                };
+        getMidPoints: function() {
+            var points = this.getPoints(),
+                midPoints = [];
+            if (points.length > 2) {
+                for (var i = 1; i < points.length; i++) {
+                    midPoints.push({
+                        x: (points[i - 1].x + points[i].x) / 2,
+                        y: (points[i - 1].y + points[i].y) / 2
+                    });
+                }
             }
-            return null;
+            return midPoints;
         },
-        getMovePoints: function(){
-            var modelData = this.model.toJSON();
-                points = this.getEndPoints();
+        getMovePoints: function() {
+            var modelData = this.model.toJSON(),
+                points = this.getEndPoints(),
+                midPoints;
+            points = [points.start, points.end];
             if (modelData.value == "line") {
                 return points;
             }
-            return _.extend({mid: {x: modelData.centerX, y: modelData.centerY}}, points);
+            midPoints = this.getMidPoints();
+            Array.prototype.splice.apply(points, ([1, 0]).concat(midPoints));
+            return points;
+        },
+        createArrow: function(pos) {
+            var svgRoot = this.getSvgRoot(),
+                style = this.getStyle(),
+                key = pos + "Arrow";
+            if (this[key]) {
+                return this[key];
+            }
+            if (!svgRoot) {
+                return null;
+            }
+            if (pos == "end") {
+                this[key] = svgRoot.marker(10, 10, function(add) {
+                    add.path("M 0 0 L 10 5 L 0 10 z");
+                    this.attr({
+                        refX: 10,
+                        refY: 5,
+                        fill: style.borderColor
+                    });
+                });
+            } else {
+                this[key] = svgRoot.marker(10, 10, function(add) {
+                    add.path("M 0 5 L 10 0 L 10 10 z");
+                    this.attr({
+                        refX: 0,
+                        refY: 5,
+                        fill: style.borderColor
+                    });
+                });
+            }
+            return this[key];
+        },
+        updateArrow: function(pos){
+            var style = this.getStyle();
+            if (this[pos+"Arrow"]) {
+                this[pos+"Arrow"].attr({
+                    fill: style.borderColor
+                });
+            }
+        },
+        setArrow: function(path) {
+            var self = this,
+                arrowPos = ["start", "end"],
+                style = this.getStyle();
+            arrowPos.forEach(function(pos) {
+                var marker = self.createArrow(pos),
+                    arrow = style[pos + "Arrow"];
+                if (!arrow || arrow == "line-no-arrow") {
+                    path.attr("marker-" + pos, null);
+                } else if (marker) {
+                    path.marker(pos, marker);
+                }
+                self.updateArrow(pos);
+            });
         },
         create: function(pos, type) {
             var group = this.svg.group().addClass("svg-line-group"),
-                line = null,
                 d = "",
-                points = this.getPoints();
-            if (points.point1) {
-                d = "M " + points.start.x + " " + points.start.y +
-                    " L " + points.point1.x + " " + points.point1.y +
-                    " L " + points.point2.x + " " + points.point2.y +
-                    " L " + points.end.x + " " + points.end.y;
+                path,
+                points = C.utils.parsePointInt(this.getPoints()),
+                style = this.getStyle();
+            if (points.length > 2) {
+                d = "M " + points[0].x + " " + points[0].y +
+                    " L " + points[1].x + " " + points[1].y +
+                    " L " + points[2].x + " " + points[2].y +
+                    " L " + points[3].x + " " + points[3].y;
             } else {
-                d = "M " + points.start.x + " " + points.start.y +
-                    " L " + points.end.x + " " + points.end.y;
+                d = "M " + points[0].x + " " + points[0].y +
+                    " L " + points[1].x + " " + points[1].y;
             }
             group.path(d).attr({
                 stroke: "transparent",
                 "stroke-width": 5,
                 fill: "transparent"
             });
-            group.path(d).attr({
-                stroke: this.defaultStyle.strokeColor,
-                fill: "transparent"
-            });
+            path = group.path(d);
+            this.setStyle(path);
+            this.setArrow(path);
         },
         render: function() {
             var data = this.model.toJSON();
@@ -436,12 +604,15 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         className: "svg-rect",
         type: "rect",
         defaultStyle: {
-            fill: "#fff",
-            strokeColor: "#333",
+            font: "Microsoft Yahei",
             fontSize: 12,
-            color: "#666"
-        },
-        defaultSize: {
+            textColor: "#333",
+            textBold: false,
+            textItalic: false,
+            fillColor: "#fff",
+            borderColor: "#333",
+            borderStyle: "solid",
+            borderWidth: 1,
             width: 100,
             height: 60,
             radius: 4
@@ -452,12 +623,15 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
             this.rectGroup = null;
             this.pointGroup = null;
             this.isSelected = false;
+            this.isShowPoints = false;
             this.setElement(this.svg.node);
             this.on({
                 "move": this.moveView,
                 "moveEnd": this.moveEnd,
                 "resize": this.resizeView,
             }, this);
+
+            this.listenTo(Backbone, "lineClose", this.showConnectPoints);
         },
 
         events: {
@@ -478,27 +652,26 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         },
         create: function(pos, type, text) {
             var group = this.svg.group().addClass("svg-rect-group"),
+                style = this.getStyle(),
                 rect = null,
-                width = this.model.get("width") || this.defaultSize.width,
-                height = this.model.get("height") || this.defaultSize.height;
+                width = style.width,
+                height = style.height;
             this.rectGroup = group;
             rect = group.rect(width, height);
             rect.attr({
                 x: pos.x - width / 2,
                 y: pos.y - height / 2,
-                fill: this.defaultStyle.fill,
-                stroke: this.defaultStyle.strokeColor
             });
+            this.setStyle(rect);
             if (type == "round-rect") {
-                rect.radius(this.defaultSize.radius);
+                rect.radius(style.radius);
             }
             if (text) {
                 text = this.setSvgText(text, group)
                     .addClass("svg-rect-text")
-                    .attr({
-                        fill: this.defaultStyle.color
-                    }).leading(1);
+                    .leading(1);
                 text.center(pos.x, pos.y);
+                this.setTextStyle(text);
             }
         },
         render: function() {
@@ -519,21 +692,26 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         className: "svg-device",
         type: "device",
         defaultStyle: {
-            font: "Helvetica",
+            font: "Microsoft Yahei",
             fontSize: 12,
-            color: "#666"
+            textColor: "#333",
+            textBold: false,
+            textItalic: false,
+            fillColor: "#fff",
+            borderColor: "#333",
+            borderStyle: "solid",
+            borderWidth: 1,
+            width: 60,
+            height: 60,
         },
         iconPadding: 10,
-        defaultSize: {
-            width: 60,
-            height: 60
-        },
         init: function() {
             this.svg = new SVG.G().addClass(this.className);
             this.deviceGroup = null;
             this.borderGroup = null;
             this.pointGroup = null;
             this.isSelected = false;
+            this.isShowPoints = false;
             this.setElement(this.svg.node);
 
             this.on({
@@ -569,19 +747,17 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         },
         create: function(pos, type, deviceName) {
             var group = this.svg.group().addClass("svg-device-group"),
+                style = this.getStyle(),
                 img = null,
                 text = null,
                 box = null,
-                width = this.model.get("width") || this.defaultSize.width,
-                height = this.model.get("height") || this.defaultSize.height;
+                width = style.width,
+                height = style.height;
+
             deviceName = deviceName || "设置设备";
             text = group.text("" + deviceName)
-                .addClass("svg-device-id")
-                .font({
-                    fill: this.defaultStyle.color,
-                    family: this.defaultStyle.font,
-                    size: this.defaultStyle.size
-                });
+                .addClass("svg-device-id");
+            this.setTextStyle(text);
             box = text.rbox();
             text.attr({
                 x: pos.x - box.width / 2,
@@ -615,5 +791,5 @@ define(["jquery", "underscore", "backbone", "svg", "common"], function($, _, Bac
         rect: RectView,
         device: DeviceView,
 
-    }
+    };
 });
