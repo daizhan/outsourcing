@@ -54,6 +54,7 @@ require(
             initialize: function(data) {
                 this.data = data;
                 this.$main = $("<div></div>").addClass("draw-container");
+                this.$container = null;
                 this.$el.append(this.$main);
 
                 this.root = null;
@@ -713,6 +714,7 @@ require(
                 this.scale = options.value;
                 var scale = options.value / 100;
                 this.svg.transform({scale: scale});
+                this.updateBarSize();
             },
 
             renderGrid: function() {
@@ -752,9 +754,155 @@ require(
             render: function(data) {
                 var $elem = $("<div></div>").addClass("draw-content");
                 this.$main.append($elem.attr("id", "svg-wrapper"));
+                this.$container = $elem;
                 this.root = SVG($elem[0]).size("100%", "100%");
                 this.renderGrid();
                 this.svg = this.root.group();
+                this.initScroll();
+            },
+            updateBarPos: function(type, offset) {
+                var $target;
+                if (type == "ver") {
+                    $target = this.$container.find(".ver-bar");
+                    $target.css("top", this.getScrollBarOffset(type, parseFloat($target.css("top")) + offset) + "px");
+                } else {
+                    $target = this.$container.find(".hor-bar");
+                    $target.css("left", this.getScrollBarOffset(type, parseFloat($target.css("left")) + offset) + "px");
+                }
+            },
+            updateSvgPos: function(offset) {
+                var transform = this.svg.transform();
+                transform.x -= offset.x || 0;
+                transform.y -= offset.y || 0;
+                this.svg.transform(transform);
+            },
+            updateScrollPos: function($target, isMove, offset) {
+                var type, direction, data = {};
+                if ($target.hasClass("ver-bar")) {
+                    type = "ver";
+                    direction = "y";
+                } else {
+                    type = "hor";
+                    direction = "x";
+                }
+                if (isMove) {
+                    data[direction] = this.getScrollSize(type, isMove, offset[direction]);
+                    this.updateSvgPos(data);
+                    this.updateBarPos(type, offset[direction]);
+                } else {
+                    data[direction] = this.getScrollSize(type, isMove, offset[direction]);
+                    this.updateSvgPos(_.pick(offset, direction));
+                    this.updateBarPos(type, data[direction]);
+                }
+            },
+            updateBarSize: function() {
+                var minSize = 15,
+                    $verBar = this.$container.find(".ver-bar"),
+                    $horBar = this.$container.find(".hor-bar"),
+                    width = this.$container.width(),
+                    height = this.$container.height(),
+                    svgSize = this.root.rbox(),
+                    transform = this.svg.transform(),
+                    svgWidth = svgSize.width * transform.scaleX,
+                    svgHeight = svgSize.height * transform.scaleY;
+                if (svgWidth <= width) {
+                    $horBar.hide();
+                } else {
+                    $horBar.show();
+                    $horBar.width(Math.max(width * width / svgWidth, minSize));
+                }
+                if (svgHeight <= height) {
+                    $verBar.hide();
+                } else {
+                    $verBar.show();
+                    $verBar.height(Math.max(height * height / svgHeight, minSize));
+                }
+            },
+            getScrollBarOffset: function(type, offset){
+                var minValue = 20,
+                    maxValue,
+                    size,
+                    $target;
+                if (type == "ver") {
+                    $target = this.$container.find(".ver-bar");
+                    maxValue = this.$container.height();
+                    size = $target.height();
+                } else {
+                    $target = this.$container.find(".hor-bar");
+                    maxValue = this.$container.width();
+                    size = $target.width();
+                }
+                if (offset < minValue) {
+                    offset = minValue;
+                } else if (offset + size > maxValue) {
+                    offset = maxValue - size + minValue;
+                }
+                return offset;
+            },
+            getScrollSize: function(type, isMove, offset){
+                var width = this.$container.width(),
+                    height = this.$container.height(),
+                    svgSize = this.root.rbox(),
+                    transform = this.svg.transform(),
+                    svgWidth = svgSize.width * transform.scaleX,
+                    svgHeight = svgSize.height * transform.scaleY,
+                    percent = 0,
+                    value;
+                if (type == "ver") {
+                    percent = svgHeight / height;
+                } else {
+                    percent = svgWidth / width;
+                }
+                if (isMove) {
+                    value = offset * percent;
+                } else {
+                    value = offset / percent;
+                }
+                return value;
+            },
+            initScroll: function() {
+                var self = this;
+                function createScrollbar(){
+                    var $elem = $("<span></span>").addClass("scrollbar hor-bar");
+                    self.$container.append($elem);
+                    $elem = $("<span></span>").addClass("scrollbar ver-bar");
+                    self.$container.append($elem);
+                }
+                function setEvents(){
+                    var $scrollbar = self.$container.find(".scrollbar"),
+                        lastPos = null,
+                        $target = null;
+                    if ($scrollbar.length) {
+                        $scrollbar.mousedown(function(event){
+                            lastPos = {x: event.clientX, y: event.clientY};
+                            $target = $(event.target);
+                        });
+                        $(document).mousemove(function(event){
+                            if (!lastPos) {
+                                return ;
+                            }
+                            var offset = {
+                                x: event.clientX - lastPos.x,
+                                y: event.clientY - lastPos.y
+                            };
+                            self.updateScrollPos($target, true, offset);
+                            lastPos = {x: event.clientX, y: event.clientY};
+                        });
+                        $(document).mouseup(function(){
+                            lastPos = null;
+                            $target = null;
+                        });
+                    }
+                    self.root.node.addEventListener("wheel", function(event){
+                        var $verBar = self.$container.find(".ver-bar"),
+                            $horBar = self.$container.find(".hor-bar");
+                        self.updateScrollPos($verBar, false, {y: event.deltaY});
+                        self.updateScrollPos($horBar, false, {x: event.deltaX});
+                    });
+                }
+                createScrollbar();
+                this.updateBarSize();
+                setEvents();
             },
             setRightBtnMenu: function() {
                 $(document).contextmenu(function(event) {
@@ -798,6 +946,7 @@ require(
             init: function(data, callback) {
                 var validData = this.checkData(data);
                 app = new AppView(validData);
+                window.app = app;
             },
             save: function(callback) {
                 if (!app) {

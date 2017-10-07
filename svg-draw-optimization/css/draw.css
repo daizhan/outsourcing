@@ -609,6 +609,32 @@ textarea {
 
 /* end tool and attrs */
 
+/* scroll bar start */
+.scrollbar {
+    position: absolute;
+    display: block;
+    background: rgba(0,0,0,0.2);
+    border-radius: 3px;
+    transition: all 0.2s;
+    -webkit-transition: all 0.2s;
+}
+.scrollbar:hover{
+    background: rgba(0,0,0,0.4);
+}
+.hor-bar{
+    bottom: 14px;
+    left: 20px;
+    width: 100px;
+    height: 6px;
+}
+.ver-bar{
+    right: 14px;
+    top: 20px;
+    width: 6px;
+    height: 100px;
+}
+/* end scroll bar */
+
 
 /* svg start */
 
